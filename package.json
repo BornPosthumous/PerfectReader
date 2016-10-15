@@ -2,9 +2,22 @@
   "name": "PerfectReader",
   "version": "0.1.0",
   "main": "./dist/index.js",
+  "scripts": {
+    "start": "node scripts/run",
+    "build": "node scripts/build-webpack"
+  },
   "repository": {
     "url": "git@github.com:BornPosthumous/PerfectReader.git",
     "type": "git"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "@types/restify": "^2.0.33",
+    "restify": "^4.1.1",
+    "source-map-support": "^0.4.3",
+    "ts-loader": "^0.9.1",
+    "typescript": "^2.0.3",
+    "webpack": "^1.13.2",
+    "webpack-node-externals": "^1.5.4"
+  }
 }
