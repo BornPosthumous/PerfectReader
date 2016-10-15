@@ -1,0 +1,10 @@
+{
+  "name": "PerfectReader",
+  "version": "0.1.0",
+  "main": "./dist/index.js",
+  "repository": {
+    "url": "git@github.com:BornPosthumous/PerfectReader.git",
+    "type": "git"
+  },
+  "license": "MIT"
+}
