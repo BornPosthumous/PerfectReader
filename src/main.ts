@@ -1,17 +1,10 @@
+import Database from './db'
+
 declare function setTimeout(callback: () => void, timeout: number): void
 
 async function Test() {
-  try {
-    const val = await asyncFn()
-  } catch(e) {
-    console.log(e)
-  }
+  console.log(Database.db)
 }
 
-function asyncFn() {
-  return new Promise((resolve, reject) => {
-    setTimeout(() => reject(false), 100)
-  })
-}
 
 Test()
