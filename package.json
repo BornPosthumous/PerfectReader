@@ -1,0 +1,30 @@
+{
+  "name": "restify-serv",
+  "version": "1.0.0",
+  "description": "",
+  "main": "bundle.js",
+  "scripts": {
+    "build": "node ./scripts/build-dist",
+    "start": "nodemon scripts/run | ./node_modules/.bin/bunyan"
+  },
+  "dependencies": {
+    "@types/bunyan": "0.0.31",
+    "inversify": "^2.0.1",
+    "inversify-restify-utils": "^2.1.2",
+    "jimp": "^0.2.27",
+    "pg-promise": "^5.3.5",
+    "reflect-metadata": "^0.1.8",
+    "restify": "^4.2.0",
+    "restify-errors": "^4.3.0",
+    "tesseract.js": "^1.0.10",
+    "ts-loader": "^0.9.5",
+    "typescript": "^2.0.6",
+    "validator.ts": "^0.2.2"
+  },
+  "devDependencies": {
+    "todo-webpack-plugin": "^1.4.0"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

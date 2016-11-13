@@ -1,0 +1,1 @@
+SELECT * FROM ${schema~}.Paragraphs where book_id=$1;
