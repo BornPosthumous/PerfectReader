@@ -2,7 +2,7 @@ import {IsLength, IsEmail, IsInt, NotEmpty, IsNumeric} from "validator.ts/decora
 import TextsController from './text'
 import ParagraphsController from './paragraphs'
 import HighlightController from './highlight'
-
+import UsersController from './users'
 //TODO Mimic behavior with new set up?
 // const validators = new Proxy(_validators, {
 //     get(target: any , name: string){
@@ -16,6 +16,7 @@ const validators = {
     TextsController,
     ParagraphsController,
     HighlightController,
+    UsersController
 };
 
 export default validators

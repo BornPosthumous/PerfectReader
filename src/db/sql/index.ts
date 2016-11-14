@@ -21,7 +21,7 @@ export default {
         drop: SQL_Helper.readFile('users/drop.sql'),
         add: SQL_Helper.readFile('users/add.sql'),
         updatePassword: SQL_Helper.readFile('users/update-password.sql'),
-        createUsersView: SQL_Helper.readFile('users/users-viewsql'),
+        createUsersView: SQL_Helper.readFile('users/users-view.sql'),
         remove: SQL_Helper.readFile('users/remove.sql'),
     },
     texts: {

@@ -71,6 +71,10 @@
 	const server_config_1 = __webpack_require__(29);
 	const logger_factory_1 = __webpack_require__(30);
 	const db_1 = __webpack_require__(32);
+	const users_1 = __webpack_require__(41);
+	const user_1 = __webpack_require__(42);
+	const session_1 = __webpack_require__(44);
+	const cache_1 = __webpack_require__(47);
 	exports.kernel = new inversify_1.Kernel();
 	exports.kernel
 	    .bind(constants_1.default.LoggerFactory)
@@ -88,6 +92,21 @@
 	exports.kernel
 	    .bind(constants_1.default.Database)
 	    .toConstantValue(exports.kernel.get(constants_1.default.DatabaseProvider).getDatabase());
+	// UserService -
+	exports.kernel
+	    .bind(constants_1.default.UserService)
+	    .to(user_1.default)
+	    .inSingletonScope();
+	// SessionService -
+	exports.kernel
+	    .bind(constants_1.default.SessionService)
+	    .to(session_1.default)
+	    .inSingletonScope();
+	// CacheService -
+	exports.kernel
+	    .bind(constants_1.default.CacheService)
+	    .to(cache_1.default)
+	    .inSingletonScope();
 	exports.kernel
 	    .bind(inversify_restify_utils_1.TYPE.Controller)
 	    .to(texts_1.TextsController)
@@ -112,6 +131,9 @@
 	    .bind(constants_1.default.HighlightService)
 	    .to(highlight_2.HighlightService)
 	    .inSingletonScope();
+	exports.kernel.bind(inversify_restify_utils_1.TYPE.Controller)
+	    .to(users_1.default)
+	    .whenTargetNamed('UsersController');
 	exports.kernel.bind(constants_1.default.App)
 	    .to(app_1.App);
 
@@ -142,9 +164,9 @@
 	    HTTPServer: Symbol('HTTPServer'),
 	    ServerConfig: Symbol('ServerConfig'),
 	    // Router: Symbol('Router'),
-	    // UserService: Symbol('UserService'),
-	    // SessionService: Symbol('SessionService'),
-	    // CacheService: Symbol('CacheService'),
+	    UserService: Symbol('UserService'),
+	    SessionService: Symbol('SessionService'),
+	    CacheService: Symbol('CacheService'),
 	    TextsService: Symbol("ITextsService"),
 	    ParagraphsService: Symbol("IParagraphsService"),
 	    HighlightService: Symbol("IHighlightService"),
@@ -263,6 +285,10 @@
 	        this.server.close(cb);
 	    }
 	};
+	__decorate([
+	    inversify_1.inject(constants_1.__.SessionService), 
+	    __metadata('design:type', Object)
+	], HTTPServer.prototype, "session", void 0);
 	__decorate([
 	    inversify_1.inject(constants_1.__.LoggerFactory), 
 	    __metadata('design:type', Object)
@@ -803,6 +829,7 @@
 	const text_1 = __webpack_require__(17);
 	const paragraphs_1 = __webpack_require__(19);
 	const highlight_1 = __webpack_require__(20);
+	const users_1 = __webpack_require__(49);
 	//TODO Mimic behavior with new set up?
 	// const validators = new Proxy(_validators, {
 	//     get(target: any , name: string){
@@ -815,6 +842,7 @@
 	    TextsController: text_1.default,
 	    ParagraphsController: paragraphs_1.default,
 	    HighlightController: highlight_1.default,
+	    UsersController: users_1.default
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.default = validators;
@@ -1871,6 +1899,8 @@
 	    bootstrap() {
 	        return __awaiter(this, void 0, void 0, function* () {
 	            try {
+	                this.httpServer.onBootstrap(this.userService.onBootstrap.bind(this.userService));
+	                this.httpServer.onBootstrap(this.cache.onBootstrap.bind(this.cache));
 	                this.httpServer.onBootstrap(this.textsService.onBootstrap.bind(this.textsService));
 	                this.httpServer.onBootstrap(this.paragraphsService.onBootstrap.bind(this.paragraphsService));
 	                this.httpServer.onBootstrap(this.highlightService.onBootstrap.bind(this.highlightService));
@@ -1904,6 +1934,14 @@
 	    inversify_1.inject(constants_1.default.HighlightService), 
 	    __metadata('design:type', Object)
 	], App.prototype, "highlightService", void 0);
+	__decorate([
+	    inversify_1.inject(constants_1.default.UserService), 
+	    __metadata('design:type', Object)
+	], App.prototype, "userService", void 0);
+	__decorate([
+	    inversify_1.inject(constants_1.default.CacheService), 
+	    __metadata('design:type', Object)
+	], App.prototype, "cache", void 0);
 	App = __decorate([
 	    inversify_1.injectable(),
 	    __param(0, inversify_1.inject(constants_1.default.LoggerFactory)), 
@@ -2101,7 +2139,7 @@
 	    }
 	    find(id) {
 	        return __awaiter(this, void 0, void 0, function* () {
-	            return this.db.oneOrNone('SELECT * from Users_View where id = $1', id);
+	            return this.db.oneOrNone('SELECT * from Users_View WHERE id = $1', id);
 	        });
 	    }
 	    findPasswordHashById(id) {
@@ -2109,9 +2147,14 @@
 	            return this.db.oneOrNone('SELECT password from Users where id = $1', id);
 	        });
 	    }
+	    findByEmail(email) {
+	        return __awaiter(this, void 0, void 0, function* () {
+	            return this.db.oneOrNone('SELECT * from Users_View WHERE email = $1', email);
+	        });
+	    }
 	    all() {
 	        return __awaiter(this, void 0, void 0, function* () {
-	            return this.db.any('SELECT * from Users_View');
+	            return this.db.any('SELECT * from Users_View ');
 	        });
 	    }
 	    total() {
@@ -2157,7 +2200,7 @@
 	        drop: SQL_Helper.readFile('users/drop.sql'),
 	        add: SQL_Helper.readFile('users/add.sql'),
 	        updatePassword: SQL_Helper.readFile('users/update-password.sql'),
-	        createUsersView: SQL_Helper.readFile('users/users-viewsql'),
+	        createUsersView: SQL_Helper.readFile('users/users-view.sql'),
 	        remove: SQL_Helper.readFile('users/remove.sql'),
 	    },
 	    texts: {
@@ -2378,6 +2421,529 @@
 	    }
 	}
 	exports.Repository = Repository;
+
+
+/***/ },
+/* 41 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+	    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+	    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+	    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+	    return c > 3 && r && Object.defineProperty(target, key, r), r;
+	};
+	var __metadata = (this && this.__metadata) || function (k, v) {
+	    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+	};
+	var __param = (this && this.__param) || function (paramIndex, decorator) {
+	    return function (target, key) { decorator(target, key, paramIndex); }
+	};
+	var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+	    return new (P || (P = Promise))(function (resolve, reject) {
+	        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+	        function rejected(value) { try { step(generator.throw(value)); } catch (e) { reject(e); } }
+	        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+	        step((generator = generator.apply(thisArg, _arguments)).next());
+	    });
+	};
+	const restify_errors_1 = __webpack_require__(15);
+	const inversify_restify_utils_1 = __webpack_require__(7);
+	const inversify_1 = __webpack_require__(2);
+	const constants_1 = __webpack_require__(4);
+	const validate_1 = __webpack_require__(13);
+	let UsersController = class UsersController {
+	    constructor(LoggerFactory) {
+	        this.logger = LoggerFactory.getLogger(this);
+	    }
+	    get(req, res, next) {
+	        return __awaiter(this, void 0, void 0, function* () {
+	            const users = yield this.userService.getAll();
+	            return users;
+	        });
+	    }
+	    create(req, res, next) {
+	        return __awaiter(this, void 0, void 0, function* () {
+	            const id = yield this.userService.add(req.body);
+	            const user = yield this.userService.findById(id);
+	            res.send(200, user);
+	            return next();
+	        });
+	    }
+	    empty(req, res, next) {
+	        return __awaiter(this, void 0, void 0, function* () {
+	            yield this.userService.empty();
+	            res.send(200);
+	            return next();
+	        });
+	    }
+	    authenticate(req, res, next) {
+	        return __awaiter(this, void 0, void 0, function* () {
+	            const user = yield this.userService.findByEmail(req.body.email);
+	            if (!user) {
+	                return next(new restify_errors_1.BadRequestError('User not found'));
+	            }
+	            const session = yield this.userService.authenticate(req.body.password, user);
+	            res.send({ id_token: session });
+	            return next();
+	        });
+	    }
+	};
+	__decorate([
+	    inversify_1.inject(constants_1.default.UserService), 
+	    __metadata('design:type', Object)
+	], UsersController.prototype, "userService", void 0);
+	__decorate([
+	    inversify_1.inject(constants_1.default.Database), 
+	    __metadata('design:type', Object)
+	], UsersController.prototype, "db", void 0);
+	__decorate([
+	    inversify_restify_utils_1.Get('/'), 
+	    __metadata('design:type', Function), 
+	    __metadata('design:paramtypes', [Object, Object, Function]), 
+	    __metadata('design:returntype', Promise)
+	], UsersController.prototype, "get", null);
+	__decorate([
+	    validate_1.default,
+	    inversify_restify_utils_1.Post('/add'), 
+	    __metadata('design:type', Function), 
+	    __metadata('design:paramtypes', [Object, Object, Function]), 
+	    __metadata('design:returntype', Promise)
+	], UsersController.prototype, "create", null);
+	__decorate([
+	    inversify_restify_utils_1.Post('/empty'), 
+	    __metadata('design:type', Function), 
+	    __metadata('design:paramtypes', [Object, Object, Function]), 
+	    __metadata('design:returntype', Promise)
+	], UsersController.prototype, "empty", null);
+	__decorate([
+	    validate_1.default,
+	    inversify_restify_utils_1.Post('/authenticate'), 
+	    __metadata('design:type', Function), 
+	    __metadata('design:paramtypes', [Object, Object, Function]), 
+	    __metadata('design:returntype', Promise)
+	], UsersController.prototype, "authenticate", null);
+	UsersController = __decorate([
+	    inversify_1.injectable(),
+	    inversify_restify_utils_1.Controller(`${constants_1.API_BASE}/users`),
+	    __param(0, inversify_1.inject(constants_1.default.LoggerFactory)), 
+	    __metadata('design:paramtypes', [Object])
+	], UsersController);
+	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.default = UsersController;
+
+
+/***/ },
+/* 42 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+	    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+	    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+	    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+	    return c > 3 && r && Object.defineProperty(target, key, r), r;
+	};
+	var __metadata = (this && this.__metadata) || function (k, v) {
+	    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+	};
+	var __param = (this && this.__param) || function (paramIndex, decorator) {
+	    return function (target, key) { decorator(target, key, paramIndex); }
+	};
+	var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+	    return new (P || (P = Promise))(function (resolve, reject) {
+	        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+	        function rejected(value) { try { step(generator.throw(value)); } catch (e) { reject(e); } }
+	        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+	        step((generator = generator.apply(thisArg, _arguments)).next());
+	    });
+	};
+	const inversify_1 = __webpack_require__(2);
+	const bcrypt_1 = __webpack_require__(43);
+	const Validator_1 = __webpack_require__(14);
+	const Validation_1 = __webpack_require__(18);
+	const bluebird_1 = __webpack_require__(33);
+	const constants_1 = __webpack_require__(4);
+	const validator = new Validator_1.Validator();
+	const SALT_WORK_FACTOR = 10;
+	const hashAsync = bluebird_1.promisify(bcrypt_1.hash);
+	const compareAsync = bluebird_1.promisify(bcrypt_1.compare);
+	let UserService = class UserService {
+	    constructor(LoggerFactory) {
+	        this.logger = LoggerFactory.getLogger(this);
+	    }
+	    onBootstrap() {
+	        return __awaiter(this, void 0, void 0, function* () {
+	            this.logger.info('create users table');
+	            yield this.db.users.create();
+	            this.logger.info('create users view');
+	            yield this.db.users.createUsersView();
+	        });
+	    }
+	    findByEmail(email) {
+	        return __awaiter(this, void 0, void 0, function* () {
+	            return this.db.users.findByEmail(email);
+	        });
+	    }
+	    findById(id) {
+	        return __awaiter(this, void 0, void 0, function* () {
+	            return this.db.users.find(+id);
+	        });
+	    }
+	    getAll() {
+	        return __awaiter(this, void 0, void 0, function* () {
+	            return this.db.users.all();
+	        });
+	    }
+	    add(req) {
+	        return __awaiter(this, void 0, void 0, function* () {
+	            const emailExists = yield this.db.users.findByEmail(req.email);
+	            if (emailExists) {
+	                throw new Error('Email already exists');
+	            }
+	            req.password = yield hashAsync(req.password, SALT_WORK_FACTOR);
+	            const id = yield this.db.users.add(req);
+	            return id;
+	        });
+	    }
+	    updatePassword(userId, oldPassword, newPassword) {
+	        return __awaiter(this, void 0, void 0, function* () {
+	            const user = yield this.db.users.find(userId);
+	            const passwordHash = user.password;
+	            const candidateHash = yield hashAsync(oldPassword, SALT_WORK_FACTOR);
+	            const valid = yield compareAsync(candidateHash, passwordHash);
+	            if (valid) {
+	                return this.db.users.updatePassword(newPassword, userId);
+	            }
+	            return Promise.reject(new Error());
+	        });
+	    }
+	    authenticate(candidate, user) {
+	        return __awaiter(this, void 0, void 0, function* () {
+	            const { password } = yield this.db.users.findPasswordHashById(+user.id);
+	            if (!bcrypt_1.hash) {
+	                return Promise.reject(new Error('User not found'));
+	            }
+	            const auth = yield compareAsync(candidate, password);
+	            const session = yield this.session.setSession(user);
+	            return session;
+	        });
+	    }
+	    empty() {
+	        return __awaiter(this, void 0, void 0, function* () {
+	            return this.db.users.empty();
+	        });
+	    }
+	};
+	__decorate([
+	    inversify_1.inject(constants_1.default.Database), 
+	    __metadata('design:type', Object)
+	], UserService.prototype, "db", void 0);
+	__decorate([
+	    inversify_1.inject(constants_1.default.SessionService), 
+	    __metadata('design:type', Object)
+	], UserService.prototype, "session", void 0);
+	UserService = __decorate([
+	    inversify_1.injectable(),
+	    __param(0, inversify_1.inject(constants_1.default.LoggerFactory)), 
+	    __metadata('design:paramtypes', [Object])
+	], UserService);
+	class ValidateUserReq {
+	    set id(id) {
+	        this._id = id + '';
+	    }
+	}
+	__decorate([
+	    Validation_1.IsNumeric(), 
+	    __metadata('design:type', String)
+	], ValidateUserReq.prototype, "_id", void 0);
+	__decorate([
+	    Validation_1.IsLength(6, 20), 
+	    __metadata('design:type', String)
+	], ValidateUserReq.prototype, "password", void 0);
+	class User {
+	}
+	__decorate([
+	    Validation_1.IsLength(6, 20), 
+	    __metadata('design:type', String)
+	], User.prototype, "username", void 0);
+	__decorate([
+	    Validation_1.IsEmail(), 
+	    __metadata('design:type', String)
+	], User.prototype, "email", void 0);
+	__decorate([
+	    Validation_1.IsLength(6, 20), 
+	    __metadata('design:type', String)
+	], User.prototype, "password", void 0);
+	__decorate([
+	    Validation_1.IsLength(3, 20), 
+	    __metadata('design:type', String)
+	], User.prototype, "fname", void 0);
+	__decorate([
+	    Validation_1.IsLength(3, 20), 
+	    __metadata('design:type', String)
+	], User.prototype, "lname", void 0);
+	exports.User = User;
+	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.default = UserService;
+
+
+/***/ },
+/* 43 */
+/***/ function(module, exports) {
+
+	module.exports = require("bcrypt");
+
+/***/ },
+/* 44 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+	    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+	    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+	    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+	    return c > 3 && r && Object.defineProperty(target, key, r), r;
+	};
+	var __metadata = (this && this.__metadata) || function (k, v) {
+	    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+	};
+	var __param = (this && this.__param) || function (paramIndex, decorator) {
+	    return function (target, key) { decorator(target, key, paramIndex); }
+	};
+	var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+	    return new (P || (P = Promise))(function (resolve, reject) {
+	        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+	        function rejected(value) { try { step(generator.throw(value)); } catch (e) { reject(e); } }
+	        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+	        step((generator = generator.apply(thisArg, _arguments)).next());
+	    });
+	};
+	const inversify_1 = __webpack_require__(2);
+	const jsonwebtoken_1 = __webpack_require__(45);
+	const fs_1 = __webpack_require__(11);
+	const path = __webpack_require__(37);
+	const node_uuid_1 = __webpack_require__(46);
+	const constants_1 = __webpack_require__(4);
+	const KEY_FILE = path.resolve(process.cwd(), 'keys');
+	// TODO: CHANGE KEYS
+	const PRIVATE_KEY = fs_1.readFileSync(`${KEY_FILE}/privkey.pem`);
+	const PUBLIC_KEY = fs_1.readFileSync(`${KEY_FILE}/pubkey.pem`);
+	let SessionService = class SessionService {
+	    constructor(LoggerFactory) {
+	        this.logger = LoggerFactory.getLogger(this);
+	    }
+	    getSession(token) {
+	        return __awaiter(this, void 0, void 0, function* () {
+	            return new Promise((resolve, reject) => {
+	                jsonwebtoken_1.verify(token, PUBLIC_KEY, (err, decoded) => {
+	                    if (err) {
+	                        reject(err);
+	                        return;
+	                    }
+	                    resolve(decoded);
+	                });
+	            });
+	        });
+	    }
+	    setSession(user) {
+	        return __awaiter(this, void 0, void 0, function* () {
+	            const sessionId = node_uuid_1.v4();
+	            const token = jsonwebtoken_1.sign({ ['session-id']: sessionId }, PRIVATE_KEY, { algorithm: 'RS256' });
+	            yield this.cache.set(sessionId, JSON.stringify(user));
+	            return token;
+	        });
+	    }
+	    clearSession() {
+	        return __awaiter(this, void 0, void 0, function* () {
+	        });
+	    }
+	};
+	__decorate([
+	    inversify_1.inject(constants_1.default.CacheService), 
+	    __metadata('design:type', Object)
+	], SessionService.prototype, "cache", void 0);
+	SessionService = __decorate([
+	    inversify_1.injectable(),
+	    __param(0, inversify_1.inject(constants_1.default.LoggerFactory)), 
+	    __metadata('design:paramtypes', [Object])
+	], SessionService);
+	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.default = SessionService;
+
+
+/***/ },
+/* 45 */
+/***/ function(module, exports) {
+
+	module.exports = require("jsonwebtoken");
+
+/***/ },
+/* 46 */
+/***/ function(module, exports) {
+
+	module.exports = require("node-uuid");
+
+/***/ },
+/* 47 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+	    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+	    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+	    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+	    return c > 3 && r && Object.defineProperty(target, key, r), r;
+	};
+	var __metadata = (this && this.__metadata) || function (k, v) {
+	    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+	};
+	var __param = (this && this.__param) || function (paramIndex, decorator) {
+	    return function (target, key) { decorator(target, key, paramIndex); }
+	};
+	var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+	    return new (P || (P = Promise))(function (resolve, reject) {
+	        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+	        function rejected(value) { try { step(generator.throw(value)); } catch (e) { reject(e); } }
+	        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+	        step((generator = generator.apply(thisArg, _arguments)).next());
+	    });
+	};
+	const inversify_1 = __webpack_require__(2);
+	const redis_1 = __webpack_require__(48);
+	const constants_1 = __webpack_require__(4);
+	let CacheService = class CacheService {
+	    constructor(LoggerFactory) {
+	        this.logger = LoggerFactory.getLogger(this);
+	    }
+	    onBootstrap() {
+	        return __awaiter(this, void 0, void 0, function* () {
+	            return new Promise((resolve, reject) => {
+	                this.logger.info('connecting to redis');
+	                this.client = redis_1.createClient();
+	                Reflect.get(this.client, 'on').call(this, 'ready', () => {
+	                    this.logger.info('connected');
+	                    resolve(true);
+	                });
+	                Reflect.get(this.client, 'on').call(this, 'err', (err) => {
+	                    this.logger.error(err);
+	                    reject(false);
+	                });
+	                Reflect.get(this.client, 'on').call(this, 'reconnecting', (err) => this.logger.info(`reconnecting ${err ? 'err=' + err : ''}`));
+	            });
+	        });
+	    }
+	    get(key) {
+	        return __awaiter(this, void 0, void 0, function* () {
+	            return new Promise((resolve, reject) => {
+	                this.client.get(key, (err, value) => {
+	                    if (err) {
+	                        reject(err);
+	                        return;
+	                    }
+	                    const str = value;
+	                    resolve(str);
+	                });
+	            });
+	        });
+	    }
+	    set(key, value) {
+	        return __awaiter(this, void 0, void 0, function* () {
+	            const time = Date.now();
+	            return new Promise((resolve, reject) => {
+	                this.client.set(key, value, (err, value) => {
+	                    if (err) {
+	                        reject(err);
+	                        return;
+	                    }
+	                    this.logger.info(`key=${key} time=${Date.now() - time}`);
+	                    resolve(true);
+	                });
+	            });
+	        });
+	    }
+	};
+	CacheService = __decorate([
+	    inversify_1.injectable(),
+	    __param(0, inversify_1.inject(constants_1.default.LoggerFactory)), 
+	    __metadata('design:paramtypes', [Object])
+	], CacheService);
+	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.default = CacheService;
+
+
+/***/ },
+/* 48 */
+/***/ function(module, exports) {
+
+	module.exports = require("redis");
+
+/***/ },
+/* 49 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+	    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+	    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+	    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+	    return c > 3 && r && Object.defineProperty(target, key, r), r;
+	};
+	var __metadata = (this && this.__metadata) || function (k, v) {
+	    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+	};
+	const Validation_1 = __webpack_require__(18);
+	class authenticate {
+	    constructor() {
+	        this.email = ''; // TODO: It sucks to have to initialize these
+	        this.password = '';
+	    }
+	}
+	__decorate([
+	    Validation_1.IsEmail(), 
+	    __metadata('design:type', String)
+	], authenticate.prototype, "email", void 0);
+	__decorate([
+	    // TODO: It sucks to have to initialize these
+	    Validation_1.IsLength(6, 20), 
+	    __metadata('design:type', String)
+	], authenticate.prototype, "password", void 0);
+	class create {
+	    constructor() {
+	        this.fname = '';
+	        this.lname = '';
+	        this.username = '';
+	        this.password = '';
+	        this.email = '';
+	    }
+	}
+	__decorate([
+	    Validation_1.IsLength(3, 20), 
+	    __metadata('design:type', String)
+	], create.prototype, "fname", void 0);
+	__decorate([
+	    Validation_1.IsLength(3, 20), 
+	    __metadata('design:type', String)
+	], create.prototype, "lname", void 0);
+	__decorate([
+	    Validation_1.IsLength(6, 20), 
+	    __metadata('design:type', String)
+	], create.prototype, "username", void 0);
+	__decorate([
+	    Validation_1.IsLength(6, 20), 
+	    __metadata('design:type', String)
+	], create.prototype, "password", void 0);
+	__decorate([
+	    Validation_1.IsEmail(), 
+	    __metadata('design:type', String)
+	], create.prototype, "email", void 0);
+	const UsersController = {
+	    authenticate,
+	    create,
+	};
+	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.default = UsersController;
 
 
 /***/ }

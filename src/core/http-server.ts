@@ -11,6 +11,7 @@ import IReq from "../interfaces/req"
 import IRes from "../interfaces/res"
 import ILogger from "../interfaces/logger"
 import ILoggerFactory from "../interfaces/logger-factory"
+import ISessionService from "../interfaces/session-service"
 
 @injectable()
 export class HTTPServer implements IHTTPServer {
@@ -18,6 +19,8 @@ export class HTTPServer implements IHTTPServer {
     private port: number;
     private router: InversifyRestifyServer;
     private _serverConfig: IServerConfig;
+
+    @inject(__.SessionService) session: ISessionService;
     @inject(__.LoggerFactory) LoggerFactory: ILoggerFactory;
     public logger: ILogger
 

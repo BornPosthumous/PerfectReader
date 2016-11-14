@@ -11,9 +11,9 @@ export const __ = {
     ServerConfig: Symbol('ServerConfig'),
     // Router: Symbol('Router'),
 
-    // UserService: Symbol('UserService'),
-    // SessionService: Symbol('SessionService'),
-    // CacheService: Symbol('CacheService'),
+    UserService: Symbol('UserService'),
+    SessionService: Symbol('SessionService'),
+    CacheService: Symbol('CacheService'),
     TextsService: Symbol("ITextsService"),
     ParagraphsService: Symbol("IParagraphsService"),
     HighlightService: Symbol("IHighlightService"),

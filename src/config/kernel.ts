@@ -23,6 +23,13 @@ import IDatabaseProvider from "../interfaces/database-provider";
 import DatabaseProvider from "../db";
 import {IDatabase} from "pg-promise";
 import {IExtensions} from "../db/index";
+import UsersController from "../controllers/users";
+import IUserService from "../interfaces/user-service";
+import UserService from "../services/user";
+import ISessionService from "../interfaces/session-service";
+import SessionService from "../services/session";
+import ICacheService from "../interfaces/cache-service";
+import CacheService from "../services/cache";
 
 export const kernel = new Kernel();
 
@@ -44,6 +51,23 @@ kernel
 kernel
     .bind<IDatabase<IExtensions>>(__.Database)
     .toConstantValue(kernel.get<IDatabaseProvider>(__.DatabaseProvider).getDatabase());
+// UserService -
+kernel
+    .bind<IUserService>(__.UserService)
+    .to(UserService)
+    .inSingletonScope();
+
+// SessionService -
+kernel
+    .bind<ISessionService>(__.SessionService)
+    .to(SessionService)
+    .inSingletonScope();
+    
+// CacheService -
+kernel
+.bind<ICacheService>(__.CacheService)
+    .to(CacheService)
+    .inSingletonScope();
 
 kernel
     .bind<IController>(<any>TYPE.Controller)
@@ -75,5 +99,8 @@ kernel
     .to(HighlightService)
     .inSingletonScope()
 
+kernel.bind<IController>(<any> TYPE.Controller)
+    .to(UsersController)
+    .whenTargetNamed('UsersController');
 kernel.bind<IApp>(__.App)
     .to(App)
