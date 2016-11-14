@@ -9,11 +9,15 @@
   },
   "dependencies": {
     "@types/bcrypt": "0.0.30",
+    "@types/bluebird": "^3.0.35",
     "@types/bunyan": "0.0.31",
     "@types/jsonwebtoken": "^7.1.33",
     "@types/node-uuid": "0.0.28",
     "@types/redis": "^0.12.32",
+    "@types/restify": "^2.0.34",
+    "axios": "^0.15.2",
     "bcrypt": "^0.8.7",
+    "bluebird": "^3.4.6",
     "inversify": "^2.0.1",
     "inversify-restify-utils": "^2.1.2",
     "jimp": "^0.2.27",
@@ -23,10 +27,12 @@
     "reflect-metadata": "^0.1.8",
     "restify": "^4.2.0",
     "restify-errors": "^4.3.0",
+    "source-map-support": "^0.4.6",
     "tesseract.js": "^1.0.10",
     "ts-loader": "^0.9.5",
     "typescript": "^2.0.6",
-    "validator.ts": "^0.2.2"
+    "validator.ts": "^0.2.2",
+    "webpack-node-externals": "^1.5.4"
   },
   "devDependencies": {
     "todo-webpack-plugin": "^1.4.0"

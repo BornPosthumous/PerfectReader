@@ -61,20 +61,20 @@
 	const constants_1 = __webpack_require__(4);
 	const http_server_1 = __webpack_require__(5);
 	const texts_1 = __webpack_require__(8);
-	const highlight_1 = __webpack_require__(21);
-	const paragraphs_1 = __webpack_require__(22);
-	const texts_2 = __webpack_require__(23);
-	const paragraphs_2 = __webpack_require__(26);
-	const highlight_2 = __webpack_require__(27);
+	const highlight_1 = __webpack_require__(22);
+	const paragraphs_1 = __webpack_require__(23);
+	const texts_2 = __webpack_require__(24);
+	const paragraphs_2 = __webpack_require__(27);
+	const highlight_2 = __webpack_require__(28);
 	const inversify_restify_utils_1 = __webpack_require__(7);
-	const app_1 = __webpack_require__(28);
-	const server_config_1 = __webpack_require__(29);
-	const logger_factory_1 = __webpack_require__(30);
-	const db_1 = __webpack_require__(32);
-	const users_1 = __webpack_require__(41);
-	const user_1 = __webpack_require__(42);
-	const session_1 = __webpack_require__(44);
-	const cache_1 = __webpack_require__(47);
+	const app_1 = __webpack_require__(29);
+	const server_config_1 = __webpack_require__(30);
+	const logger_factory_1 = __webpack_require__(31);
+	const db_1 = __webpack_require__(33);
+	const users_1 = __webpack_require__(42);
+	const user_1 = __webpack_require__(43);
+	const session_1 = __webpack_require__(45);
+	const cache_1 = __webpack_require__(48);
 	exports.kernel = new inversify_1.Kernel();
 	exports.kernel
 	    .bind(constants_1.default.LoggerFactory)
@@ -829,7 +829,7 @@
 	const text_1 = __webpack_require__(17);
 	const paragraphs_1 = __webpack_require__(19);
 	const highlight_1 = __webpack_require__(20);
-	const users_1 = __webpack_require__(49);
+	const users_1 = __webpack_require__(21);
 	//TODO Mimic behavior with new set up?
 	// const validators = new Proxy(_validators, {
 	//     get(target: any , name: string){
@@ -1177,6 +1177,73 @@
 	var __metadata = (this && this.__metadata) || function (k, v) {
 	    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 	};
+	const Validation_1 = __webpack_require__(18);
+	class authenticate {
+	    constructor() {
+	        this.email = ''; // TODO: It sucks to have to initialize these
+	        this.password = '';
+	    }
+	}
+	__decorate([
+	    Validation_1.IsEmail(), 
+	    __metadata('design:type', String)
+	], authenticate.prototype, "email", void 0);
+	__decorate([
+	    // TODO: It sucks to have to initialize these
+	    Validation_1.IsLength(6, 20), 
+	    __metadata('design:type', String)
+	], authenticate.prototype, "password", void 0);
+	class create {
+	    constructor() {
+	        this.fname = '';
+	        this.lname = '';
+	        this.username = '';
+	        this.password = '';
+	        this.email = '';
+	    }
+	}
+	__decorate([
+	    Validation_1.IsLength(3, 20), 
+	    __metadata('design:type', String)
+	], create.prototype, "fname", void 0);
+	__decorate([
+	    Validation_1.IsLength(3, 20), 
+	    __metadata('design:type', String)
+	], create.prototype, "lname", void 0);
+	__decorate([
+	    Validation_1.IsLength(6, 20), 
+	    __metadata('design:type', String)
+	], create.prototype, "username", void 0);
+	__decorate([
+	    Validation_1.IsLength(6, 20), 
+	    __metadata('design:type', String)
+	], create.prototype, "password", void 0);
+	__decorate([
+	    Validation_1.IsEmail(), 
+	    __metadata('design:type', String)
+	], create.prototype, "email", void 0);
+	const UsersController = {
+	    authenticate,
+	    create,
+	};
+	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.default = UsersController;
+
+
+/***/ },
+/* 22 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+	    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+	    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+	    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+	    return c > 3 && r && Object.defineProperty(target, key, r), r;
+	};
+	var __metadata = (this && this.__metadata) || function (k, v) {
+	    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+	};
 	var __param = (this && this.__param) || function (paramIndex, decorator) {
 	    return function (target, key) { decorator(target, key, paramIndex); }
 	};
@@ -1366,7 +1433,7 @@
 
 
 /***/ },
-/* 22 */
+/* 23 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -1544,7 +1611,7 @@
 
 
 /***/ },
-/* 23 */
+/* 24 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -1572,8 +1639,8 @@
 	const constants_1 = __webpack_require__(4);
 	const source_1 = __webpack_require__(9);
 	const text_reader_1 = __webpack_require__(10);
-	let Tesseract = __webpack_require__(24);
-	let Jimp = __webpack_require__(25);
+	let Tesseract = __webpack_require__(25);
+	let Jimp = __webpack_require__(26);
 	//TODO must find a way to fix JIMP asynchronicity
 	//TODO how do we make the timeout period longer for ocrTextFromFS
 	let TextsService = class TextsService {
@@ -1678,19 +1745,19 @@
 
 
 /***/ },
-/* 24 */
+/* 25 */
 /***/ function(module, exports) {
 
 	module.exports = require("tesseract.js");
 
 /***/ },
-/* 25 */
+/* 26 */
 /***/ function(module, exports) {
 
 	module.exports = require("jimp");
 
 /***/ },
-/* 26 */
+/* 27 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -1776,7 +1843,7 @@
 
 
 /***/ },
-/* 27 */
+/* 28 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -1866,7 +1933,7 @@
 
 
 /***/ },
-/* 28 */
+/* 29 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -1951,7 +2018,7 @@
 
 
 /***/ },
-/* 29 */
+/* 30 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -1963,7 +2030,7 @@
 
 
 /***/ },
-/* 30 */
+/* 31 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -1976,7 +2043,7 @@
 	var __metadata = (this && this.__metadata) || function (k, v) {
 	    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 	};
-	const bunyan_1 = __webpack_require__(31);
+	const bunyan_1 = __webpack_require__(32);
 	const inversify_1 = __webpack_require__(2);
 	let LoggerFactory_1 = class LoggerFactory {
 	    static makeDefaultConfig() {
@@ -2012,13 +2079,13 @@
 
 
 /***/ },
-/* 31 */
+/* 32 */
 /***/ function(module, exports) {
 
 	module.exports = require("bunyan");
 
 /***/ },
-/* 32 */
+/* 33 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -2032,12 +2099,12 @@
 	    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 	};
 	const inversify_1 = __webpack_require__(2);
-	const promise = __webpack_require__(33);
-	const pgPromise = __webpack_require__(34);
-	const users_1 = __webpack_require__(35);
-	const texts_1 = __webpack_require__(38);
-	const highlights_1 = __webpack_require__(39);
-	const paragraphs_1 = __webpack_require__(40);
+	const promise = __webpack_require__(34);
+	const pgPromise = __webpack_require__(35);
+	const users_1 = __webpack_require__(36);
+	const texts_1 = __webpack_require__(39);
+	const highlights_1 = __webpack_require__(40);
+	const paragraphs_1 = __webpack_require__(41);
 	let DatabaseProvider = class DatabaseProvider {
 	    constructor() {
 	        const options = {
@@ -2072,19 +2139,19 @@
 
 
 /***/ },
-/* 33 */
+/* 34 */
 /***/ function(module, exports) {
 
 	module.exports = require("bluebird");
 
 /***/ },
-/* 34 */
+/* 35 */
 /***/ function(module, exports) {
 
 	module.exports = require("pg-promise");
 
 /***/ },
-/* 35 */
+/* 36 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -2096,7 +2163,7 @@
 	        step((generator = generator.apply(thisArg, _arguments)).next());
 	    });
 	};
-	const sql_1 = __webpack_require__(36);
+	const sql_1 = __webpack_require__(37);
 	const sql = sql_1.default.users;
 	class Repository {
 	    constructor(db) {
@@ -2172,12 +2239,12 @@
 
 
 /***/ },
-/* 36 */
+/* 37 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
-	const pg_promise_1 = __webpack_require__(34);
-	const path = __webpack_require__(37);
+	const pg_promise_1 = __webpack_require__(35);
+	const path = __webpack_require__(38);
 	class SQL_Helper {
 	    static readFile(file) {
 	        const fullpath = path.join('../src/db/sql', file);
@@ -2229,13 +2296,13 @@
 
 
 /***/ },
-/* 37 */
+/* 38 */
 /***/ function(module, exports) {
 
 	module.exports = require("path");
 
 /***/ },
-/* 38 */
+/* 39 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -2247,7 +2314,7 @@
 	        step((generator = generator.apply(thisArg, _arguments)).next());
 	    });
 	};
-	const sql_1 = __webpack_require__(36);
+	const sql_1 = __webpack_require__(37);
 	const sql = sql_1.default.texts;
 	class Repository {
 	    constructor(db) {
@@ -2293,7 +2360,7 @@
 
 
 /***/ },
-/* 39 */
+/* 40 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -2305,7 +2372,7 @@
 	        step((generator = generator.apply(thisArg, _arguments)).next());
 	    });
 	};
-	const sql_1 = __webpack_require__(36);
+	const sql_1 = __webpack_require__(37);
 	const sql = sql_1.default.highlights;
 	class Repository {
 	    constructor(db) {
@@ -2361,7 +2428,7 @@
 
 
 /***/ },
-/* 40 */
+/* 41 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -2373,7 +2440,7 @@
 	        step((generator = generator.apply(thisArg, _arguments)).next());
 	    });
 	};
-	const sql_1 = __webpack_require__(36);
+	const sql_1 = __webpack_require__(37);
 	const sql = sql_1.default.paragraphs;
 	class Repository {
 	    constructor(db) {
@@ -2424,7 +2491,7 @@
 
 
 /***/ },
-/* 41 */
+/* 42 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -2535,7 +2602,7 @@
 
 
 /***/ },
-/* 42 */
+/* 43 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -2560,10 +2627,10 @@
 	    });
 	};
 	const inversify_1 = __webpack_require__(2);
-	const bcrypt_1 = __webpack_require__(43);
+	const bcrypt_1 = __webpack_require__(44);
 	const Validator_1 = __webpack_require__(14);
 	const Validation_1 = __webpack_require__(18);
-	const bluebird_1 = __webpack_require__(33);
+	const bluebird_1 = __webpack_require__(34);
 	const constants_1 = __webpack_require__(4);
 	const validator = new Validator_1.Validator();
 	const SALT_WORK_FACTOR = 10;
@@ -2690,13 +2757,13 @@
 
 
 /***/ },
-/* 43 */
+/* 44 */
 /***/ function(module, exports) {
 
 	module.exports = require("bcrypt");
 
 /***/ },
-/* 44 */
+/* 45 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -2721,10 +2788,10 @@
 	    });
 	};
 	const inversify_1 = __webpack_require__(2);
-	const jsonwebtoken_1 = __webpack_require__(45);
+	const jsonwebtoken_1 = __webpack_require__(46);
 	const fs_1 = __webpack_require__(11);
-	const path = __webpack_require__(37);
-	const node_uuid_1 = __webpack_require__(46);
+	const path = __webpack_require__(38);
+	const node_uuid_1 = __webpack_require__(47);
 	const constants_1 = __webpack_require__(4);
 	const KEY_FILE = path.resolve(process.cwd(), 'keys');
 	// TODO: CHANGE KEYS
@@ -2774,19 +2841,19 @@
 
 
 /***/ },
-/* 45 */
+/* 46 */
 /***/ function(module, exports) {
 
 	module.exports = require("jsonwebtoken");
 
 /***/ },
-/* 46 */
+/* 47 */
 /***/ function(module, exports) {
 
 	module.exports = require("node-uuid");
 
 /***/ },
-/* 47 */
+/* 48 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -2811,7 +2878,7 @@
 	    });
 	};
 	const inversify_1 = __webpack_require__(2);
-	const redis_1 = __webpack_require__(48);
+	const redis_1 = __webpack_require__(49);
 	const constants_1 = __webpack_require__(4);
 	let CacheService = class CacheService {
 	    constructor(LoggerFactory) {
@@ -2874,77 +2941,10 @@
 
 
 /***/ },
-/* 48 */
+/* 49 */
 /***/ function(module, exports) {
 
 	module.exports = require("redis");
-
-/***/ },
-/* 49 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-	var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-	    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-	    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-	    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-	    return c > 3 && r && Object.defineProperty(target, key, r), r;
-	};
-	var __metadata = (this && this.__metadata) || function (k, v) {
-	    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-	};
-	const Validation_1 = __webpack_require__(18);
-	class authenticate {
-	    constructor() {
-	        this.email = ''; // TODO: It sucks to have to initialize these
-	        this.password = '';
-	    }
-	}
-	__decorate([
-	    Validation_1.IsEmail(), 
-	    __metadata('design:type', String)
-	], authenticate.prototype, "email", void 0);
-	__decorate([
-	    // TODO: It sucks to have to initialize these
-	    Validation_1.IsLength(6, 20), 
-	    __metadata('design:type', String)
-	], authenticate.prototype, "password", void 0);
-	class create {
-	    constructor() {
-	        this.fname = '';
-	        this.lname = '';
-	        this.username = '';
-	        this.password = '';
-	        this.email = '';
-	    }
-	}
-	__decorate([
-	    Validation_1.IsLength(3, 20), 
-	    __metadata('design:type', String)
-	], create.prototype, "fname", void 0);
-	__decorate([
-	    Validation_1.IsLength(3, 20), 
-	    __metadata('design:type', String)
-	], create.prototype, "lname", void 0);
-	__decorate([
-	    Validation_1.IsLength(6, 20), 
-	    __metadata('design:type', String)
-	], create.prototype, "username", void 0);
-	__decorate([
-	    Validation_1.IsLength(6, 20), 
-	    __metadata('design:type', String)
-	], create.prototype, "password", void 0);
-	__decorate([
-	    Validation_1.IsEmail(), 
-	    __metadata('design:type', String)
-	], create.prototype, "email", void 0);
-	const UsersController = {
-	    authenticate,
-	    create,
-	};
-	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.default = UsersController;
-
 
 /***/ }
 /******/ ]);
