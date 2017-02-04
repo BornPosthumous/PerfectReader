@@ -20,7 +20,12 @@ export class HighlightController implements IController {
     ) {
         this.logger = LoggerFactory.getLogger(this)
     }
-
+    /**
+     * This route gets all the highlights
+     * @param {string} req -
+     * @param {string} res -
+     * @param {string} next -
+     */
     @Get('/')
     private async index(req: IReq, res: Response, next: Next) {
         this.logger.info("Getting all highlights")
@@ -30,11 +35,11 @@ export class HighlightController implements IController {
     }
     @Get('/get/book')
     private async getBook ( req: IReq, res: Response, next: Next){
-        this.logger.info("Getting highlights from book" , req.query)
-        let result: IResult; 
+        this.logger.info("Getting highlights from book" , req.body)
+        let result: IResult;
         try{
-            const book_id: number | null 
-                = req.query.book_id ? req.query.book_id : null
+            const book_id: number | null
+                = req.body.book_id ? req.body.book_id : null
 
             if(!book_id){ throw new Error("No book_id on query")}
 
@@ -48,11 +53,11 @@ export class HighlightController implements IController {
 
     @Get('/get')
     private async get(req: IReq, res:Response, next:Next){
-        this.logger.info('Getting highlight by id:' , req.query)
-        let result: IResult; 
+        this.logger.info('Getting highlight by id:' , req.body)
+        let result: IResult;
         try{
-            const id: number | null 
-                = req.query.id ? req.query.id : null
+            const id: number | null
+                = req.body.id ? req.body.id : null
 
             if(!id){ throw new Error("No id on query")}
 
@@ -65,15 +70,15 @@ export class HighlightController implements IController {
     }
     @Get('/get/paragraph')
     private async getParagraph ( req: IReq, res: Response, next: Next){
-        this.logger.info("Getting all highlights in paragraph" , req.query)
-        let result: IResult; 
+        this.logger.info("Getting all highlights in paragraph" , req.body)
+        let result: IResult;
         try{
-            const book_id: number | null 
-                = req.query.book_id ? req.query.book_id : null
+            const book_id: number | null
+                = req.body.book_id ? req.body.book_id : null
 
             if(!book_id){ throw new Error("No book_id on query")}
-            const paragraph_id: number | null 
-                = req.query.paragraph_id ? req.query.paragraph_id : null
+            const paragraph_id: number | null
+                = req.body.paragraph_id ? req.body.paragraph_id : null
 
             if(!book_id){ throw new Error("No book_id on query")}
             result = await this.HighlightService.getParagraph(book_id, paragraph_id)
@@ -85,43 +90,43 @@ export class HighlightController implements IController {
     }
     @Post('/add')
     private async addHighlight(req: IReq, res:Response, next:Next){
-        this.logger.info('Adding highlight:' , req.query)
-        let result: IResult; 
+        this.logger.info('Adding highlight:' , req.body)
+        let result: IResult;
         try{
-            const book_id: number | null 
-                = req.query.book_id ? req.query.book_id : null
+            const book_id: number | null
+                = req.body.book_id ? req.body.book_id : null
 
             if(!book_id){ throw new Error("No book_id on query")}
 
-            const book_id_exists : any | null 
+            const book_id_exists : any | null
                 = await this.HighlightService.findByID(book_id)
-            
+
             if(!book_id_exists){ throw new Error("book_id not in db")}
-                
-            const paragraph_id: number | null 
-                = req.query.paragraph_id ? req.query.paragraph_id : null
+
+            const paragraph_id: number | null
+                = req.body.paragraph_id ? req.body.paragraph_id : null
 
             if(!book_id){ throw new Error("No paragraph_id on query")}
 
-            const start: number | null 
-                = req.query.start ? req.query.start : null
+            const start: number | null
+                = req.body.start ? req.body.start : null
 
             if(!start){ throw new Error("No start position on query")}
 
-            const end: number | null 
-                = req.query.end ? req.query.end : null
+            const end: number | null
+                = req.body.end ? req.body.end : null
 
             if(!end){ throw new Error("No end position on query")}
-            
-            const text: string | null 
-                = (req.query.text && req.query.text.length > 0 )
-                ? req.query.text
+
+            const text: string | null
+                = (req.body.text && req.body.text.length > 0 )
+                ? req.body.text
                 : null
 
             if(!text){ throw new Error("No text")}
 
-            result = await this.HighlightService.add(book_id , paragraph_id, text, start, end) 
-            res.send(result)   
+            result = await this.HighlightService.add(book_id , paragraph_id, text, start, end)
+            res.send(result)
         } catch (e) {
             this.logger.error(e)
             res.send(e)
@@ -131,21 +136,21 @@ export class HighlightController implements IController {
     }
     @Post('/update/text')
     private async update(req: IReq, res:Response, next:Next){
-        this.logger.info("Updating highlight: " , req.query)
+        this.logger.info("Updating highlight: " , req.body)
         let result:IResult;
         try{
-            const id : number | null 
-                = req.query.id ? req.query.id : null
-            
+            const id : number | null
+                = req.body.id ? req.body.id : null
+
             if(!id){ throw new Error("No id on query")}
-            const id_exists : any | null 
+            const id_exists : any | null
                 = await this.HighlightService.findByID(id)
-            
+
             if(!id_exists){throw new Error("id not in db")}
 
-            const text: string | null 
-                = (req.query.text && req.query.text.length > 0 )
-                ? req.query.text
+            const text: string | null
+                = (req.body.text && req.body.text.length > 0 )
+                ? req.body.text
                 : null
 
             if(!text){ throw new Error("No text")}
@@ -159,21 +164,21 @@ export class HighlightController implements IController {
     }
     @Delete('/deleteID')
     private async removeByID (req: IReq, res:Response, next:Next){
-        this.logger.info("Deleting highlight :  " , req.query )
-        
+        this.logger.info("Deleting highlight :  " , req.body )
+
         let result:IResult;
         try{
-            const id : number | null = 
-                req.query.id ? req.query.id : null
+            const id : number | null =
+                req.body.id ? req.body.id : null
 
-            const id_exists : any | null 
+            const id_exists : any | null
                 = await this.HighlightService.findByID(id)
-            
+
             if(!id_exists){throw new Error("id not in db")}
 
             result = await this.HighlightService.removeByID(id)
 
-        } catch(e) { 
+        } catch(e) {
             this.logger.warn(e)
             res.send(e)
         }

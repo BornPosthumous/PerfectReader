@@ -2,7 +2,7 @@ import { injectable, inject } from "inversify"
 import IBootstrap from '../interfaces/bootstrap'
 import IServerConfig from '../interfaces/server-config'
 import IHTTPServer from '../interfaces/http-server'
-import { Server, queryParser, bodyParser } from "restify"
+import { Server, queryParser, bodyParser, CORS } from "restify"
 import { InversifyRestifyServer } from "inversify-restify-utils"
 import { kernel } from "../config/kernel"
 import { __ } from "../config/constants"
@@ -28,13 +28,13 @@ export class HTTPServer implements IHTTPServer {
         this.port = this._serverConfig.port;
         this.router = new InversifyRestifyServer(<any>kernel)
     }
-    
+
     public get version(): string { return this.server.version }
     public set version(version) { this.server.version = version }
 
     public get name(): string { return this.server.name }
     public set name(name) { this.server.name = name }
-    
+
     private toBootstrap: Array<IBootstrap> = [];
     public onBootstrap(fn: (cb: (err: Error, res: any) => void) => void): Promise<any> {
         return new Promise((resolve, reject) => {
@@ -54,21 +54,23 @@ export class HTTPServer implements IHTTPServer {
             .setConfig((app: Server) => {
                 app.pre((req: any, res: any, next: Function) => {
                     req.start = Date.now();
-                    this.logger.info(`Creating server`)
-
                     next()
                 });
+                app.use(CORS({
+                    origins: ['http://localhost:4200'],
+                    credentials: true
+                }));
                 app.use(queryParser())
                 app.use(bodyParser())
             })
             .build()
 
-        
+
         this.server.on('after', (req: IReq, res: IRes, route: string, err: Error) => {
             err && err.name !== 'BadRequestError' && this.logger.error(err);
-            const request:string  = this.logger['format'](req)
-            const start:any = req.start;
-            this.logger.info(`${request} status=${res.statusCode} time=${Date.now() - start }`)
+            const request: string = this.logger['format'](req)
+            const start: any = req.start;
+            this.logger.info(`${request} status=${res.statusCode} time=${Date.now() - start}`)
         });
 
         this.server.on('uncaughtEception', (req: IReq, res: IRes, route: string, err: Error) => {
@@ -101,15 +103,16 @@ export class HTTPServer implements IHTTPServer {
 
         this.server.on('BadRequest', (req: any, res: any, err: any, cb: Function) => {
             if (err.jse_cause) {
-                err.body.message = JSON.stringify({errors: err.jse_cause.errors})
+                err.body.message = JSON.stringify({ errors: err.jse_cause.errors })
             }
             cb()
         });
 
         this.server.on('NotFound', (req: any, res: any, err: any, cb: Function) => {
             // req.uuid = uuid()
+            console.log("Not found");
             req.start = Date.now()
-            
+
             const page = `
             <h1>404</h1>
             `;
@@ -121,7 +124,7 @@ export class HTTPServer implements IHTTPServer {
 
         this.server.listen(this.port)
     }
-    public close( cb : Function) : void {
+    public close(cb: Function): void {
         this.server.close(cb)
     }
 }

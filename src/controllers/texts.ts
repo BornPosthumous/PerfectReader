@@ -18,37 +18,42 @@ import IResult from '../interfaces/result'
 export class TextsController implements IController {
     private logger: ILogger
 
-    constructor( 
+    constructor(
         @inject(__.TextsService) private TextService: ITextsService,
         @inject(__.LoggerFactory) private LoggerFactory : ILoggerFactory,
         @inject(__.ParagraphsService) private ParagraphsService: IParagraphsService
-    ) { 
+    ) {
         this.logger = LoggerFactory.getLogger(this)
     }
-
+    /**
+     * This route gets all the ID's of texts
+     * @param {string} req - Request from client
+     * @param {string} res -Response object
+     * @param {string} next -Send to next route
+     */
     @Get('/')
     private async index(req: IReq, res: Response, next: Next) {
         this.logger.info("Getting All Texts")
-        let result:any = 
+        let result:any =
             await this.TextService.getAll()
           result = result.map((x:any) => x.id)
         res.send(result)
         return next()
     }
-    //TODO OCR from web image
 
+    //TODO OCR from web image
     @Post('/ocr')
     private async getTextFromOCR(req: IReq, res: Response, next: Next){
         let result: any;
         req.connection.setTimeout(10000000)
         try{
              const path: string | null
-                = req.query.path ? req.query.path : null
+                = req.body.path ? req.body.path : null
             if ( !path ) { throw new Error("No path on Query")}
             const title: string | null
-                = req.query.title ? req.query.title : null
+                = req.body.title ? req.body.title : null
             if ( !title ) { throw new Error("No title on Query")}
-            
+
             result = await this.TextService.ocrTextFromFS(title, path)
             res.send(200, result)
         } catch(e){
@@ -56,13 +61,19 @@ export class TextsController implements IController {
             res.send(e)
         }
     }
+    /**
+     * This route takes a text id and converts it to paragraphs and saves to DB in paragraphs table
+     * @param {string} req -
+     * @param {string} res -
+     * @param {string} next -
+     */
     @Post('/convert')
      private async toParagraph(req: IReq, res: Response, next: Next) {
         this.logger.info("Converting")
         let result: IResult;
         try{
-             const id: number | null 
-                = req.query.id ? req.query.id : null
+             const id: number | null
+                = req.body.id ? req.body.id : null
             if ( !id ) { throw new Error("No Id on Query")}
 
             const id_exists = await this.ParagraphsService.findByID(id)
@@ -71,7 +82,6 @@ export class TextsController implements IController {
             const id_deleted = id_exists.deleted
             if(id_deleted) { throw new Error("requested text is deleted")}
 
-            // Should this logic go to the service?
             const text = (await this.TextService.findByID(id)).text
             const tr = new TextReader(Source.TEXT)
             await tr.init(text)
@@ -80,24 +90,30 @@ export class TextsController implements IController {
             })
             result = await this.ParagraphsService.getBook(id)
             res.json(result)
+
         } catch (e){
             this.logger.error(e)
             res.send(e)
         }
      }
+    /* Takes a text attached to the request and saves that text in the db
+     * @param {string} req - request.body = {title: string, text: string}
+     * @param {string} res -
+     * @param {string} next -
+     */
     @Post('/add/raw')
     private async addText(req: IReq, res:Response, next:Next){
-        this.logger.info("Adding Raw Text :  " , req.query )
+        this.logger.info("Adding Raw Text :  " , req.body )
         let result: IResult;
         try{
-            const title: string | null 
-                = req.query.title ? req.query.title : null
+            const title: string | null
+                = req.body.title ? req.body.title : null
             if ( !title ) { throw new Error("No Title on Query")}
-            
-            const text: string | null 
-                = req.query.text ? req.query.text : null
+
+            const text: string | null
+                = req.body.text ? req.body.text : null
             if ( !text ) { throw new Error("No text on Query") }
-            
+
             result = await this.TextService.add(title, text)
             res.send(result)
         } catch (e){
@@ -105,16 +121,23 @@ export class TextsController implements IController {
         }
         return next()
     }
+
+    /**
+     * Gets a text from the file system and saves it to the DB
+     * @param {string} req - request.body = {title: string, path: string}
+     * @param {string} res -
+     * @param {string} next -
+     */
     @Post('/add/fs')
     private async addTextFromFS(req: IReq, res:Response, next:Next){
-        this.logger.info("Adding Text from FS :  " , req.query )
+        this.logger.info("Adding Text from FS :  " , req.body )
         let result: IResult;
         try{
-            const title: string | null 
-                = req.query.title ? req.query.title : null
+            const title: string | null
+                = req.body.title ? req.body.title : null
             if ( !title ) { throw new Error("No Title on Query")}
-            const path: string | null 
-                    = req.query.path ? req.query.path : null
+            const path: string | null
+                    = req.body.path ? req.body.path : null
             if ( !path ) { throw new Error("No path on Query") }
 
             result = await this.TextService.addTextFromFS(title,path)
@@ -125,16 +148,23 @@ export class TextsController implements IController {
         }
         return next()
     }
+
+    /**
+     * This route gets a text from a url and saves it into the DB (.txt only)
+     * @param {string} req - request.body = {title: string, url: string} ex: https://www.gutenberg.org/files/11/11-0.txt
+     * @param {string} res -
+     * @param {string} next -
+     */
     @Post('/add/url')
     private async addTextFromURL(req: IReq, res:Response, next:Next){
-        this.logger.info("Adding Text from URL :  " , req.query )
+        this.logger.info("Adding Text from URL :  " , req.body )
         let result: IResult;
-        try{            
-            const title: string | null 
-                = req.query.title ? req.query.title : null
+        try{
+            const title: string | null
+                = req.body.title ? req.body.title : null
             if ( !title ) { throw new Error("No Title on Query")}
-            const url: string | null 
-                    = req.query.url ? req.query.url : null
+            const url: string | null
+                    = req.body.url ? req.body.url : null
             if ( !url ) { throw new Error("No url on Query") }
 
             result = await this.TextService.addTextFromURL(title, url)
@@ -146,32 +176,46 @@ export class TextsController implements IController {
         }
         return next()
     }
-    @Get('/getID')
+
+    /**
+     * Get a text by ID
+     * @param {string} req - request.body = {id: number}
+     * @param {string} res -
+     * @param {string} next -
+     */
+    @Post('/getID')
     private async findByID (req: IReq, res:Response, next:Next){
-        this.logger.info("Getting Text with ID: " , req.query )
-        const id: number | null 
-                = req.query.id ? req.query.id : null
+        this.logger.info("Getting Text with ID: " , req.body )
+        const id: number | null
+                = req.body.id ? req.body.id : null
             if ( !id ) { throw new Error("No Id on Query")}
 
         const response = (await this.TextService.findByID(id))
-        if(!response.deleted){ 
+        if(!response.deleted){
             res.send(response)
         } else {
-            this.logger.info("Requested resource has deleted flag") 
-            res.send("Resource found, but has deleted flag") 
+            this.logger.info("Requested resource has deleted flag")
+            res.send("Resource found, but has deleted flag")
         }
         return next()
     }
+
+    /**
+     * Delete a text by ID
+     * @param {string} req - request.body = {id: number}
+     * @param {string} res -
+     * @param {string} next -
+     */
     @Delete('/deleteID')
     private async removeByID (req: IReq, res:Response, next:Next){
-        this.logger.info("Deleting ID :  " , req.query )
-        // console.log(req.query.id)
-        // const id : number = req.query.id
+        this.logger.info("Deleting ID :  " , req.body )
+        // console.log(req.body.id)
+        // const id : number = req.body.id
         // res.send( (await this.TextService.removeByID(id)))
         let result: IResult;
-        try{            
-            const id: number | null 
-                = req.query.id ? req.query.id : null
+        try{
+            const id: number | null
+                = req.body.id ? req.body.id : null
             if ( !id ) { throw new Error("No Id on Query")}
 
             const id_exists = await this.ParagraphsService.findByID(id)
@@ -186,28 +230,35 @@ export class TextsController implements IController {
         }
         return next()
     }
+
+    /**
+     * Update a text associated with an ID
+     * @param {string} req - request.body = {id: number}
+     * @param {string} res -
+     * @param {string} next -
+     */
     @Post('/update/text')
     private async update(req: IReq, res:Response, next:Next){
-        this.logger.info("Updating Text by ID" , req.query)
+        this.logger.info("Updating Text by ID" , req.body)
         let result:IResult;
         try{
-            const id : number | null 
-                = req.query.id ? req.query.id : null
-            
+            const id : number | null
+                = req.body.id ? req.body.id : null
+
             if(!id){ throw new Error("No id on query")}
 
-            const id_exists : any | null 
+            const id_exists : any | null
                 = await this.TextService.findByID(id)
-            
+
             if(!id_exists){throw new Error("id not in db")}
 
-            const text: string | null 
-                = (req.query.text && req.query.text.length > 0 )
-                ? req.query.text
+            const text: string | null
+                = (req.body.text && req.body.text.length > 0 )
+                ? req.body.text
                 : null
 
             if(!text){ throw new Error("No text")}
-            
+
             result = await this.TextService.updateText(id, text)
             res.send(result)
 
@@ -216,28 +267,35 @@ export class TextsController implements IController {
             res.send(e)
         }
     }
+
+    /**
+     * Update the title of a text given an ID and new title
+     * @param {string} req - request.body = {id: number, title: string}
+     * @param {string} res -
+     * @param {string} next -
+     */
     @Post('/update/title')
     private async updateTitle(req: IReq, res:Response, next:Next){
-        this.logger.info("Updating Title by ID: " , req.query)
+        this.logger.info("Updating Title by ID: " , req.body)
         let result:IResult;
         try{
-            const id : number | null 
-                = req.query.id ? req.query.id : null
-            
+            const id : number | null
+                = req.body.id ? req.body.id : null
+
             if(!id){ throw new Error("No id on query")}
 
-            const id_exists : any | null 
+            const id_exists : any | null
                 = await this.TextService.findByID(id)
-            
+
             if(!id_exists){throw new Error("id not in db")}
 
-            const title: string | null 
-                = (req.query.title && req.query.title.length > 0 )
-                ? req.query.title
+            const title: string | null
+                = (req.body.title && req.body.title.length > 0 )
+                ? req.body.title
                 : null
 
             if(!title){ throw new Error("No title on query")}
-            
+
             result = await this.TextService.updateTitle(id, title)
             res.send(result)
 
@@ -246,5 +304,4 @@ export class TextsController implements IController {
             res.send(e)
         }
     }
-
 }

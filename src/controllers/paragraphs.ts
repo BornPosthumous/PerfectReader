@@ -29,13 +29,13 @@ export class ParagraphsController implements IController {
         res.send(result)
         return next()
     }
-    @Get('/book')
+    @Post('/book')
     private async getBook ( req: IReq, res: Response, next: Next){
-        this.logger.info("Getting all Paragraphs in book" , req.query)
-        let result: IResult; 
+        this.logger.info("Getting all Paragraphs in book" , req.body)
+        let result: IResult;
         try{
-            const book_id: number | null 
-                = req.query.book_id ? req.query.book_id : null
+            const book_id: number | null
+                = req.body.book_id ? req.body.book_id : null
 
             if(!book_id){ throw new Error("No book_id on query")}
 
@@ -47,13 +47,13 @@ export class ParagraphsController implements IController {
             res.send(e)
         }
     }
-    @Get('/get')
+    @Post('/get')
     private async get(req: IReq, res:Response, next:Next){
-        this.logger.info('Getting paragraph : ' , req.query)
-        let result: IResult; 
+        this.logger.info('Getting paragraph : ' , req.body)
+        let result: IResult;
         try{
-            const id: number | null 
-                = req.query.id ? req.query.id : null
+            const id: number | null
+                = req.body.id ? req.body.id : null
 
             if(!id){ throw new Error("No id on query")}
 
@@ -67,28 +67,28 @@ export class ParagraphsController implements IController {
 
     @Post('/add')
     private async addText(req: IReq, res:Response, next:Next){
-        this.logger.info('Adding paragraph :' , req.query)
-        let result: IResult; 
+        this.logger.info('Adding paragraph :' , req.body)
+        let result: IResult;
         try{
-            const book_id: number | null 
-                = req.query.book_id ? req.query.book_id : null
+            const book_id: number | null
+                = req.body.book_id ? req.body.book_id : null
 
             if(!book_id){ throw new Error("No book_id on query")}
 
-            const book_id_exists : IDBParagraph | null 
+            const book_id_exists : IDBParagraph | null
                 = await this.ParagraphsService.findByID(book_id)
-            
+
             if(!book_id_exists){ throw new Error("book_id not in db")}
-                
-            const paragraph: string | null 
-                = (req.query.paragraph && req.query.paragraph.length > 0 )
-                ? req.query.paragraph
+
+            const paragraph: string | null
+                = (req.body.paragraph && req.body.paragraph.length > 0 )
+                ? req.body.paragraph
                 : null
 
             if(!paragraph){ throw new Error("No paragraph")}
 
-            result = await this.ParagraphsService.add(book_id , paragraph) 
-                    
+            result = await this.ParagraphsService.add(book_id , paragraph)
+
         } catch (e) {
             res.send(e)
         }
@@ -97,21 +97,21 @@ export class ParagraphsController implements IController {
     }
     @Post('/update')
     private async update(req: IReq, res:Response, next:Next){
-        this.logger.info("Updating paragraph : " , req.query)
+        this.logger.info("Updating paragraph : " , req.body)
         let result:IResult;
         try{
-            const id : number | null 
-                = req.query.id ? req.query.id : null
-            
+            const id : number | null
+                = req.body.id ? req.body.id : null
+
             if(!id){ throw new Error("No id on query")}
 
-            const id_exists : IDBParagraph | null 
+            const id_exists : IDBParagraph | null
                 = await this.ParagraphsService.findByID(id)
-            
+
             if(!id_exists){throw new Error("id not in db")}
-            const paragraph: string | null 
-                = (req.query.paragraph && req.query.paragraph.length > 0 )
-                ? req.query.paragraph
+            const paragraph: string | null
+                = (req.body.paragraph && req.body.paragraph.length > 0 )
+                ? req.body.paragraph
                 : null
 
             if(!paragraph){ throw new Error("No paragraph")}
@@ -125,20 +125,20 @@ export class ParagraphsController implements IController {
     }
     @Delete('/deleteID')
     private async removeByID (req: IReq, res:Response, next:Next){
-        this.logger.info("Deleting paragraph :  " , req.query )
+        this.logger.info("Deleting paragraph :  " , req.body )
         let result:IResult;
         try{
-            const id : number | null = 
-                req.query.id ? req.query.id : null
+            const id : number | null =
+                req.body.id ? req.body.id : null
 
-            const id_exists : IDBParagraph | null 
+            const id_exists : IDBParagraph | null
                 = await this.ParagraphsService.findByID(id)
-            
+
             if(!id_exists){throw new Error("id not in db")}
 
             result = await this.ParagraphsService.removeByID(id)
 
-        } catch(e) { 
+        } catch(e) {
             this.logger.warn(e)
             res.send(e)
         }

@@ -206,9 +206,12 @@
 	            .setConfig((app) => {
 	            app.pre((req, res, next) => {
 	                req.start = Date.now();
-	                this.logger.info(`Creating server`);
 	                next();
 	            });
+	            console.log("Coarse!");
+	            app.use(restify_1.CORS({
+	                origins: ['http://localhost:4200']
+	            }));
 	            app.use(restify_1.queryParser());
 	            app.use(restify_1.bodyParser());
 	        })
@@ -250,6 +253,7 @@
 	        });
 	        this.server.on('NotFound', (req, res, err, cb) => {
 	            // req.uuid = uuid()
+	            console.log("Not found");
 	            req.start = Date.now();
 	            const page = `
 	            <h1>404</h1>
@@ -325,6 +329,12 @@
 	        this.ParagraphsService = ParagraphsService;
 	        this.logger = LoggerFactory.getLogger(this);
 	    }
+	    /**
+	     * This route gets all the ID's of texts
+	     * @param {string} req - Request from client
+	     * @param {string} res -Response object
+	     * @param {string} next -Send to next route
+	     */
 	    index(req, res, next) {
 	        return __awaiter(this, void 0, void 0, function* () {
 	            this.logger.info("Getting All Texts");
@@ -340,11 +350,11 @@
 	            let result;
 	            req.connection.setTimeout(10000000);
 	            try {
-	                const path = req.query.path ? req.query.path : null;
+	                const path = req.body.path ? req.body.path : null;
 	                if (!path) {
 	                    throw new Error("No path on Query");
 	                }
-	                const title = req.query.title ? req.query.title : null;
+	                const title = req.body.title ? req.body.title : null;
 	                if (!title) {
 	                    throw new Error("No title on Query");
 	                }
@@ -357,12 +367,18 @@
 	            }
 	        });
 	    }
+	    /**
+	     * This route takes a text id and converts it to paragraphs and saves to DB in paragraphs table
+	     * @param {string} req -
+	     * @param {string} res -
+	     * @param {string} next -
+	     */
 	    toParagraph(req, res, next) {
 	        return __awaiter(this, void 0, void 0, function* () {
 	            this.logger.info("Converting");
 	            let result;
 	            try {
-	                const id = req.query.id ? req.query.id : null;
+	                const id = req.body.id ? req.body.id : null;
 	                if (!id) {
 	                    throw new Error("No Id on Query");
 	                }
@@ -374,7 +390,6 @@
 	                if (id_deleted) {
 	                    throw new Error("requested text is deleted");
 	                }
-	                // Should this logic go to the service?
 	                const text = (yield this.TextService.findByID(id)).text;
 	                const tr = new text_reader_1.TextReader(source_1.Source.TEXT);
 	                yield tr.init(text);
@@ -390,16 +405,21 @@
 	            }
 	        });
 	    }
+	    /* Takes a text attached to the request and saves that text in the db
+	     * @param {string} req - request.body = {title: string, text: string}
+	     * @param {string} res -
+	     * @param {string} next -
+	     */
 	    addText(req, res, next) {
 	        return __awaiter(this, void 0, void 0, function* () {
-	            this.logger.info("Adding Raw Text :  ", req.query);
+	            this.logger.info("Adding Raw Text :  ", req.body);
 	            let result;
 	            try {
-	                const title = req.query.title ? req.query.title : null;
+	                const title = req.body.title ? req.body.title : null;
 	                if (!title) {
 	                    throw new Error("No Title on Query");
 	                }
-	                const text = req.query.text ? req.query.text : null;
+	                const text = req.body.text ? req.body.text : null;
 	                if (!text) {
 	                    throw new Error("No text on Query");
 	                }
@@ -412,16 +432,22 @@
 	            return next();
 	        });
 	    }
+	    /**
+	     * Gets a text from the file system and saves it to the DB
+	     * @param {string} req - request.body = {title: string, path: string}
+	     * @param {string} res -
+	     * @param {string} next -
+	     */
 	    addTextFromFS(req, res, next) {
 	        return __awaiter(this, void 0, void 0, function* () {
-	            this.logger.info("Adding Text from FS :  ", req.query);
+	            this.logger.info("Adding Text from FS :  ", req.body);
 	            let result;
 	            try {
-	                const title = req.query.title ? req.query.title : null;
+	                const title = req.body.title ? req.body.title : null;
 	                if (!title) {
 	                    throw new Error("No Title on Query");
 	                }
-	                const path = req.query.path ? req.query.path : null;
+	                const path = req.body.path ? req.body.path : null;
 	                if (!path) {
 	                    throw new Error("No path on Query");
 	                }
@@ -435,16 +461,22 @@
 	            return next();
 	        });
 	    }
+	    /**
+	     * This route gets a text from a url and saves it into the DB (.txt only)
+	     * @param {string} req - request.body = {title: string, url: string} ex: https://www.gutenberg.org/files/11/11-0.txt
+	     * @param {string} res -
+	     * @param {string} next -
+	     */
 	    addTextFromURL(req, res, next) {
 	        return __awaiter(this, void 0, void 0, function* () {
-	            this.logger.info("Adding Text from URL :  ", req.query);
+	            this.logger.info("Adding Text from URL :  ", req.body);
 	            let result;
 	            try {
-	                const title = req.query.title ? req.query.title : null;
+	                const title = req.body.title ? req.body.title : null;
 	                if (!title) {
 	                    throw new Error("No Title on Query");
 	                }
-	                const url = req.query.url ? req.query.url : null;
+	                const url = req.body.url ? req.body.url : null;
 	                if (!url) {
 	                    throw new Error("No url on Query");
 	                }
@@ -458,10 +490,16 @@
 	            return next();
 	        });
 	    }
+	    /**
+	     * Get a text by ID
+	     * @param {string} req - request.body = {id: number}
+	     * @param {string} res -
+	     * @param {string} next -
+	     */
 	    findByID(req, res, next) {
 	        return __awaiter(this, void 0, void 0, function* () {
-	            this.logger.info("Getting Text with ID: ", req.query);
-	            const id = req.query.id ? req.query.id : null;
+	            this.logger.info("Getting Text with ID: ", req.body);
+	            const id = req.body.id ? req.body.id : null;
 	            if (!id) {
 	                throw new Error("No Id on Query");
 	            }
@@ -476,15 +514,21 @@
 	            return next();
 	        });
 	    }
+	    /**
+	     * Delete a text by ID
+	     * @param {string} req - request.body = {id: number}
+	     * @param {string} res -
+	     * @param {string} next -
+	     */
 	    removeByID(req, res, next) {
 	        return __awaiter(this, void 0, void 0, function* () {
-	            this.logger.info("Deleting ID :  ", req.query);
-	            // console.log(req.query.id)
-	            // const id : number = req.query.id
+	            this.logger.info("Deleting ID :  ", req.body);
+	            // console.log(req.body.id)
+	            // const id : number = req.body.id
 	            // res.send( (await this.TextService.removeByID(id)))
 	            let result;
 	            try {
-	                const id = req.query.id ? req.query.id : null;
+	                const id = req.body.id ? req.body.id : null;
 	                if (!id) {
 	                    throw new Error("No Id on Query");
 	                }
@@ -502,12 +546,18 @@
 	            return next();
 	        });
 	    }
+	    /**
+	     * Update a text associated with an ID
+	     * @param {string} req - request.body = {id: number}
+	     * @param {string} res -
+	     * @param {string} next -
+	     */
 	    update(req, res, next) {
 	        return __awaiter(this, void 0, void 0, function* () {
-	            this.logger.info("Updating Text by ID", req.query);
+	            this.logger.info("Updating Text by ID", req.body);
 	            let result;
 	            try {
-	                const id = req.query.id ? req.query.id : null;
+	                const id = req.body.id ? req.body.id : null;
 	                if (!id) {
 	                    throw new Error("No id on query");
 	                }
@@ -515,8 +565,8 @@
 	                if (!id_exists) {
 	                    throw new Error("id not in db");
 	                }
-	                const text = (req.query.text && req.query.text.length > 0)
-	                    ? req.query.text
+	                const text = (req.body.text && req.body.text.length > 0)
+	                    ? req.body.text
 	                    : null;
 	                if (!text) {
 	                    throw new Error("No text");
@@ -530,12 +580,18 @@
 	            }
 	        });
 	    }
+	    /**
+	     * Update the title of a text given an ID and new title
+	     * @param {string} req - request.body = {id: number, title: string}
+	     * @param {string} res -
+	     * @param {string} next -
+	     */
 	    updateTitle(req, res, next) {
 	        return __awaiter(this, void 0, void 0, function* () {
-	            this.logger.info("Updating Title by ID: ", req.query);
+	            this.logger.info("Updating Title by ID: ", req.body);
 	            let result;
 	            try {
-	                const id = req.query.id ? req.query.id : null;
+	                const id = req.body.id ? req.body.id : null;
 	                if (!id) {
 	                    throw new Error("No id on query");
 	                }
@@ -543,8 +599,8 @@
 	                if (!id_exists) {
 	                    throw new Error("id not in db");
 	                }
-	                const title = (req.query.title && req.query.title.length > 0)
-	                    ? req.query.title
+	                const title = (req.body.title && req.body.title.length > 0)
+	                    ? req.body.title
 	                    : null;
 	                if (!title) {
 	                    throw new Error("No title on query");
@@ -596,7 +652,7 @@
 	    __metadata('design:returntype', Promise)
 	], TextsController.prototype, "addTextFromURL", null);
 	__decorate([
-	    inversify_restify_utils_1.Get('/getID'), 
+	    inversify_restify_utils_1.Post('/getID'), 
 	    __metadata('design:type', Function), 
 	    __metadata('design:paramtypes', [Object, Object, Function]), 
 	    __metadata('design:returntype', Promise)
@@ -792,6 +848,12 @@
 	        this.HighlightService = HighlightService;
 	        this.logger = LoggerFactory.getLogger(this);
 	    }
+	    /**
+	     * This route gets all the highlights
+	     * @param {string} req -
+	     * @param {string} res -
+	     * @param {string} next -
+	     */
 	    index(req, res, next) {
 	        return __awaiter(this, void 0, void 0, function* () {
 	            this.logger.info("Getting all highlights");
@@ -802,10 +864,10 @@
 	    }
 	    getBook(req, res, next) {
 	        return __awaiter(this, void 0, void 0, function* () {
-	            this.logger.info("Getting highlights from book", req.query);
+	            this.logger.info("Getting highlights from book", req.body);
 	            let result;
 	            try {
-	                const book_id = req.query.book_id ? req.query.book_id : null;
+	                const book_id = req.body.book_id ? req.body.book_id : null;
 	                if (!book_id) {
 	                    throw new Error("No book_id on query");
 	                }
@@ -820,10 +882,10 @@
 	    }
 	    get(req, res, next) {
 	        return __awaiter(this, void 0, void 0, function* () {
-	            this.logger.info('Getting highlight by id:', req.query);
+	            this.logger.info('Getting highlight by id:', req.body);
 	            let result;
 	            try {
-	                const id = req.query.id ? req.query.id : null;
+	                const id = req.body.id ? req.body.id : null;
 	                if (!id) {
 	                    throw new Error("No id on query");
 	                }
@@ -838,14 +900,14 @@
 	    }
 	    getParagraph(req, res, next) {
 	        return __awaiter(this, void 0, void 0, function* () {
-	            this.logger.info("Getting all highlights in paragraph", req.query);
+	            this.logger.info("Getting all highlights in paragraph", req.body);
 	            let result;
 	            try {
-	                const book_id = req.query.book_id ? req.query.book_id : null;
+	                const book_id = req.body.book_id ? req.body.book_id : null;
 	                if (!book_id) {
 	                    throw new Error("No book_id on query");
 	                }
-	                const paragraph_id = req.query.paragraph_id ? req.query.paragraph_id : null;
+	                const paragraph_id = req.body.paragraph_id ? req.body.paragraph_id : null;
 	                if (!book_id) {
 	                    throw new Error("No book_id on query");
 	                }
@@ -860,10 +922,10 @@
 	    }
 	    addHighlight(req, res, next) {
 	        return __awaiter(this, void 0, void 0, function* () {
-	            this.logger.info('Adding highlight:', req.query);
+	            this.logger.info('Adding highlight:', req.body);
 	            let result;
 	            try {
-	                const book_id = req.query.book_id ? req.query.book_id : null;
+	                const book_id = req.body.book_id ? req.body.book_id : null;
 	                if (!book_id) {
 	                    throw new Error("No book_id on query");
 	                }
@@ -871,20 +933,20 @@
 	                if (!book_id_exists) {
 	                    throw new Error("book_id not in db");
 	                }
-	                const paragraph_id = req.query.paragraph_id ? req.query.paragraph_id : null;
+	                const paragraph_id = req.body.paragraph_id ? req.body.paragraph_id : null;
 	                if (!book_id) {
 	                    throw new Error("No paragraph_id on query");
 	                }
-	                const start = req.query.start ? req.query.start : null;
+	                const start = req.body.start ? req.body.start : null;
 	                if (!start) {
 	                    throw new Error("No start position on query");
 	                }
-	                const end = req.query.end ? req.query.end : null;
+	                const end = req.body.end ? req.body.end : null;
 	                if (!end) {
 	                    throw new Error("No end position on query");
 	                }
-	                const text = (req.query.text && req.query.text.length > 0)
-	                    ? req.query.text
+	                const text = (req.body.text && req.body.text.length > 0)
+	                    ? req.body.text
 	                    : null;
 	                if (!text) {
 	                    throw new Error("No text");
@@ -901,10 +963,10 @@
 	    }
 	    update(req, res, next) {
 	        return __awaiter(this, void 0, void 0, function* () {
-	            this.logger.info("Updating highlight: ", req.query);
+	            this.logger.info("Updating highlight: ", req.body);
 	            let result;
 	            try {
-	                const id = req.query.id ? req.query.id : null;
+	                const id = req.body.id ? req.body.id : null;
 	                if (!id) {
 	                    throw new Error("No id on query");
 	                }
@@ -912,8 +974,8 @@
 	                if (!id_exists) {
 	                    throw new Error("id not in db");
 	                }
-	                const text = (req.query.text && req.query.text.length > 0)
-	                    ? req.query.text
+	                const text = (req.body.text && req.body.text.length > 0)
+	                    ? req.body.text
 	                    : null;
 	                if (!text) {
 	                    throw new Error("No text");
@@ -929,10 +991,10 @@
 	    }
 	    removeByID(req, res, next) {
 	        return __awaiter(this, void 0, void 0, function* () {
-	            this.logger.info("Deleting highlight :  ", req.query);
+	            this.logger.info("Deleting highlight :  ", req.body);
 	            let result;
 	            try {
-	                const id = req.query.id ? req.query.id : null;
+	                const id = req.body.id ? req.body.id : null;
 	                const id_exists = yield this.HighlightService.findByID(id);
 	                if (!id_exists) {
 	                    throw new Error("id not in db");
@@ -1044,10 +1106,10 @@
 	    }
 	    getBook(req, res, next) {
 	        return __awaiter(this, void 0, void 0, function* () {
-	            this.logger.info("Getting all Paragraphs in book", req.query);
+	            this.logger.info("Getting all Paragraphs in book", req.body);
 	            let result;
 	            try {
-	                const book_id = req.query.book_id ? req.query.book_id : null;
+	                const book_id = req.body.book_id ? req.body.book_id : null;
 	                if (!book_id) {
 	                    throw new Error("No book_id on query");
 	                }
@@ -1062,10 +1124,10 @@
 	    }
 	    get(req, res, next) {
 	        return __awaiter(this, void 0, void 0, function* () {
-	            this.logger.info('Getting paragraph : ', req.query);
+	            this.logger.info('Getting paragraph : ', req.body);
 	            let result;
 	            try {
-	                const id = req.query.id ? req.query.id : null;
+	                const id = req.body.id ? req.body.id : null;
 	                if (!id) {
 	                    throw new Error("No id on query");
 	                }
@@ -1080,10 +1142,10 @@
 	    }
 	    addText(req, res, next) {
 	        return __awaiter(this, void 0, void 0, function* () {
-	            this.logger.info('Adding paragraph :', req.query);
+	            this.logger.info('Adding paragraph :', req.body);
 	            let result;
 	            try {
-	                const book_id = req.query.book_id ? req.query.book_id : null;
+	                const book_id = req.body.book_id ? req.body.book_id : null;
 	                if (!book_id) {
 	                    throw new Error("No book_id on query");
 	                }
@@ -1091,8 +1153,8 @@
 	                if (!book_id_exists) {
 	                    throw new Error("book_id not in db");
 	                }
-	                const paragraph = (req.query.paragraph && req.query.paragraph.length > 0)
-	                    ? req.query.paragraph
+	                const paragraph = (req.body.paragraph && req.body.paragraph.length > 0)
+	                    ? req.body.paragraph
 	                    : null;
 	                if (!paragraph) {
 	                    throw new Error("No paragraph");
@@ -1108,10 +1170,10 @@
 	    }
 	    update(req, res, next) {
 	        return __awaiter(this, void 0, void 0, function* () {
-	            this.logger.info("Updating paragraph : ", req.query);
+	            this.logger.info("Updating paragraph : ", req.body);
 	            let result;
 	            try {
-	                const id = req.query.id ? req.query.id : null;
+	                const id = req.body.id ? req.body.id : null;
 	                if (!id) {
 	                    throw new Error("No id on query");
 	                }
@@ -1119,8 +1181,8 @@
 	                if (!id_exists) {
 	                    throw new Error("id not in db");
 	                }
-	                const paragraph = (req.query.paragraph && req.query.paragraph.length > 0)
-	                    ? req.query.paragraph
+	                const paragraph = (req.body.paragraph && req.body.paragraph.length > 0)
+	                    ? req.body.paragraph
 	                    : null;
 	                if (!paragraph) {
 	                    throw new Error("No paragraph");
@@ -1136,10 +1198,10 @@
 	    }
 	    removeByID(req, res, next) {
 	        return __awaiter(this, void 0, void 0, function* () {
-	            this.logger.info("Deleting paragraph :  ", req.query);
+	            this.logger.info("Deleting paragraph :  ", req.body);
 	            let result;
 	            try {
-	                const id = req.query.id ? req.query.id : null;
+	                const id = req.body.id ? req.body.id : null;
 	                const id_exists = yield this.ParagraphsService.findByID(id);
 	                if (!id_exists) {
 	                    throw new Error("id not in db");
@@ -1162,13 +1224,13 @@
 	    __metadata('design:returntype', Promise)
 	], ParagraphsController.prototype, "index", null);
 	__decorate([
-	    inversify_restify_utils_1.Get('/book'), 
+	    inversify_restify_utils_1.Post('/book'), 
 	    __metadata('design:type', Function), 
 	    __metadata('design:paramtypes', [Object, Object, Function]), 
 	    __metadata('design:returntype', Promise)
 	], ParagraphsController.prototype, "getBook", null);
 	__decorate([
-	    inversify_restify_utils_1.Get('/get'), 
+	    inversify_restify_utils_1.Post('/get'), 
 	    __metadata('design:type', Function), 
 	    __metadata('design:paramtypes', [Object, Object, Function]), 
 	    __metadata('design:returntype', Promise)

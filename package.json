@@ -15,11 +15,13 @@
     "pg-promise": "^5.3.5",
     "reflect-metadata": "^0.1.8",
     "restify": "^4.2.0",
+    "restify-cors-middleware": "0.0.8",
     "tesseract.js": "^1.0.10",
     "ts-loader": "^0.9.5",
     "typescript": "^2.0.6"
   },
   "devDependencies": {
+    "jsdoc": "^3.4.3",
     "todo-webpack-plugin": "^1.4.0"
   },
   "keywords": [],
