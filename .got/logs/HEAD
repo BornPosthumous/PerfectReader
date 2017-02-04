@@ -1,4 +1,0 @@
-0000000000000000000000000000000000000000 a3d222b428eb58743b59bb7d9d91f4927d233b2d jeff <jeff@localhost.localdomain> 1478007032 -0400	commit (initial): Initial Commit
-a3d222b428eb58743b59bb7d9d91f4927d233b2d c91503a0da503c359b34c2c6f5d6e633ebea8431 jeff <jeff@localhost.localdomain> 1478055909 -0400	commit: Mad Refactors
-c91503a0da503c359b34c2c6f5d6e633ebea8431 67cc7a4143d0452863dddf631c166bc47e58dc46 jeff <jeff@localhost.localdomain> 1478125962 -0400	commit: added highlight controller/service
-67cc7a4143d0452863dddf631c166bc47e58dc46 e38ae42235a3ac0465081a00ee87997d1e876a6d jeff <jeff@localhost.localdomain> 1478133185 -0400	commit: Cleaned up imports, added webpack todo
