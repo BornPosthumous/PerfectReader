@@ -208,9 +208,9 @@
 	                req.start = Date.now();
 	                next();
 	            });
-	            console.log("Coarse!");
 	            app.use(restify_1.CORS({
-	                origins: ['http://localhost:4200']
+	                origins: ['http://localhost:4200'],
+	                credentials: true
 	            }));
 	            app.use(restify_1.queryParser());
 	            app.use(restify_1.bodyParser());
