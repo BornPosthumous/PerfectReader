@@ -10,30 +10,30 @@ export class Repository {
         this.db = db
     }
     public async create(){
-        return this.db.none(sql.create)
+        return await this.db.none(sql.create)
     }
     public async add(book_id: number, paragraph_id: number, text: string, start:number, end: number ){
-        return await this.db.result(sql.add, [book_id, paragraph_id, text, start, end], (r: any) => r)
+        return await this.db.none(sql.add, [book_id, paragraph_id, text, start, end])
     }
     public async findByID ( id: number){
        return await this.db.oneOrNone('SELECT * from highlights where id = $1', id)
     }
     public async remove(id: number){
-        return this.db.result(sql.remove, id, (r: IResult) =>  r.rows)
+        return await this.db.any(sql.remove, id)
     }
     public async update(id: number, text: string){
-        return this.db.result(sql.update, [id, text], (r: IResult) =>  r)
+        return await this.db.none(sql.update, [id, text])
     }
     public async get(id: number){
-        return this.db.result('SELECT * from highlights where id=$1', id, (r:IResult) => r.rows)
+        return await this.db.any('SELECT * from highlights where id=$1', id)
     }
     public async getAll(){
-        return this.db.result('SELECT * from highlights', [], (r:IResult) => r.rows)
+        return await this.db.any('SELECT * from highlights', [])
     }
     public async getBook(book_id: number){
-        return this.db.result(sql.getBook, book_id, (r:IResult) => r.rows)
+        return await this.db.one(sql.getBook, book_id)
     }
     public async getParagraph(book_id: number, paragraph_id: number){
-        return this.db.result(sql.getParagraph, [book_id, paragraph_id], (r:IResult) => r.rows)
+        return await this.db.any(sql.getParagraph, [book_id, paragraph_id])
     }
 }
