@@ -1,6 +1,6 @@
 import { injectable, inject } from "inversify"
 import { ITextsService } from '../../interfaces/texts-service'
-import {IDatabase} from "pg-promise";
+import { IDatabase } from "pg-promise";
 import { IExtensions } from "../../db";
 import { __ } from '../../config/constants'
 import { Source } from '../../enums/source'
@@ -18,36 +18,40 @@ let Jimp = require('jimp')
 
 @injectable()
 export class TextsService implements ITextsService {
-    @inject(__.Database) db: IDatabase<IExtensions> & IExtensions;
+    db: any;
     private logger: ILogger;
 
-    public constructor( @inject(__.LoggerFactory) LoggerFactory: ILoggerFactory) {
+    public constructor(
+        @inject(__.LoggerFactory) LoggerFactory: ILoggerFactory,
+        @inject(__.Database) db: IDatabase<IExtensions> & IExtensions
+    ) {
+        this.db = db;
         this.logger = LoggerFactory.getLogger(this)
     }
-     public async onBootstrap() {
+    public async onBootstrap() {
         this.logger.info('create texts table');
         await this.db.texts.create();
     }
-    public async add(title:string , text:string){
+    public async add(title: string, text: string) {
         return await this.db.texts.add(title, text)
     }
-    public async addTextFromFS(title: string, path: string){
+    public async addTextFromFS(title: string, path: string) {
         const textReader = new TextReader(Source.FS)
         await textReader.init(path)
         return await this.db.texts
             .add(title, textReader.contents.raw)
     }
 
-    public async ocrTextFromFS(title:string, path:string){
+    public async ocrTextFromFS(title: string, path: string) {
         const filename = "./temp.jpg"
         //TODO Remove converted image !
-        const processImg = async function(){
-            return new Promise((resolve:any, reject:any)=>{
-                Jimp.read(path, function(err:any, img:any){
-                    if(err) { reject(err)}
+        const processImg = async function() {
+            return new Promise((resolve: any, reject: any) => {
+                Jimp.read(path, function(err: any, img: any) {
+                    if (err) { reject(err) }
                     img.greyscale().scale(0.75).write(filename)
                     console.log("done")
-                    resolve("Done")                   
+                    resolve("Done")
                 })
             })
         }
@@ -58,34 +62,34 @@ export class TextsService implements ITextsService {
         // (I did a test where i read file before and after/logged it to stdout )
         await Jimp.read("./rfid.jpg")
         const text = await Tesseract.recognize(filename)
-                .progress((message:any) => console.log(message))
-                .catch((err:any) => console.error(err))
-                .then((result:any) => result)
+            .progress((message: any) => console.log(message))
+            .catch((err: any) => console.error(err))
+            .then((result: any) => result)
 
         console.log("Text", text.text)
 
-        return await this.db.texts.add(title , text.text)
-     }
+        return await this.db.texts.add(title, text.text)
+    }
 
-    public async addTextFromURL( title: string, url: string){
+    public async addTextFromURL(title: string, url: string) {
         const textReader = new TextReader(Source.HTTP)
         await textReader.init(url)
         return await this.db.texts
             .add(title, textReader.contents.raw)
     }
-    public async updateText( id: number, text: string){
+    public async updateText(id: number, text: string) {
         return await this.db.texts.updateText(id, text)
     }
-    public async updateTitle( id: number, title: string){
+    public async updateTitle(id: number, title: string) {
         return await this.db.texts.updateTitle(id, title)
     }
-    public async findByID(id: number){
+    public async findByID(id: number) {
         return await this.db.texts.findByID(id)
     }
-    public async removeByID(id: number){
+    public async removeByID(id: number) {
         return await this.db.texts.remove(id)
     }
-    public async getAll(){
+    public async getAll() {
         return await this.db.texts.getAll()
     }
 }

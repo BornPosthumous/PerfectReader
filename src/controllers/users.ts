@@ -1,11 +1,11 @@
-import {Next} from "restify";
-import {BadRequestError} from "restify-errors";
-import {Post, Get, Controller} from "inversify-restify-utils";
-import {injectable, inject} from "inversify";
-import {IDatabase} from "pg-promise";
-import __, {API_BASE} from "../config/constants";
+import { Next } from "restify";
+import { BadRequestError } from "restify-errors";
+import { Post, Get, Controller } from "inversify-restify-utils";
+import { injectable, inject } from "inversify";
+import { IDatabase } from "pg-promise";
+import __, { API_BASE } from "../config/constants";
 import Validate from "../validate";
-import {IExtensions} from "../db/index";
+import { IExtensions } from "../db/index";
 import IController from "../interfaces/controller";
 import IUserService from "../interfaces/user-service";
 import ILogger from "../interfaces/logger";
@@ -16,12 +16,16 @@ import IReq from "../interfaces/req";
 @injectable()
 @Controller(`${API_BASE}/users`)
 class UsersController implements IController {
-    @inject(__.UserService) userService: IUserService;
-    @inject(__.Database) db: IDatabase<IExtensions>&IExtensions;
     private logger: ILogger;
+    userService: any;
+    db: any;
 
-
-    constructor(@inject(__.LoggerFactory) LoggerFactory: ILoggerFactory) {
+    constructor( @inject(__.LoggerFactory) LoggerFactory: ILoggerFactory,
+        @inject(__.UserService) userService: IUserService,
+        @inject(__.Database) db: IDatabase<IExtensions> & IExtensions
+    ) {
+        this.userService = userService;
+        this.db = db;
         this.logger = LoggerFactory.getLogger(this)
     }
 
@@ -56,7 +60,7 @@ class UsersController implements IController {
         }
 
         const session = await this.userService.authenticate(req.body.password, user);
-        res.send({id_token: session});
+        res.send({ id_token: session });
         return next()
     }
 }

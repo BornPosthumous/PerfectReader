@@ -2,7 +2,7 @@ import { injectable, inject } from "inversify"
 import IBootstrap from '../interfaces/bootstrap'
 import IServerConfig from '../interfaces/server-config'
 import IHTTPServer from '../interfaces/http-server'
-import { Server, queryParser, bodyParser } from "restify"
+import { Server, queryParser, bodyParser, CORS } from "restify"
 import { InversifyRestifyServer } from "inversify-restify-utils"
 import { kernel } from "../config/kernel"
 import { __ } from "../config/constants"
@@ -19,25 +19,28 @@ export class HTTPServer implements IHTTPServer {
     private port: number;
     private router: InversifyRestifyServer;
     private _serverConfig: IServerConfig;
-
-    @inject(__.SessionService) session: ISessionService;
-    @inject(__.LoggerFactory) LoggerFactory: ILoggerFactory;
+    session: any;
     public logger: ILogger
-
+    LoggerFactory: any;
     public constructor(
-        @inject(__.ServerConfig) serverConfig: IServerConfig
+        @inject(__.ServerConfig) serverConfig: IServerConfig,
+        @inject(__.SessionService) session: ISessionService,
+        @inject(__.LoggerFactory) LoggerFactory: ILoggerFactory,
+
     ) {
+        this.session = session;
         this._serverConfig = serverConfig
+        this.LoggerFactory = LoggerFactory
         this.port = this._serverConfig.port;
         this.router = new InversifyRestifyServer(<any>kernel)
     }
-    
+
     public get version(): string { return this.server.version }
     public set version(version) { this.server.version = version }
 
     public get name(): string { return this.server.name }
     public set name(name) { this.server.name = name }
-    
+
     private toBootstrap: Array<IBootstrap> = [];
     public onBootstrap(fn: (cb: (err: Error, res: any) => void) => void): Promise<any> {
         return new Promise((resolve, reject) => {
@@ -61,17 +64,18 @@ export class HTTPServer implements IHTTPServer {
 
                     next()
                 });
+                app.use(CORS())
                 app.use(queryParser())
                 app.use(bodyParser())
             })
             .build()
 
-        
+
         this.server.on('after', (req: IReq, res: IRes, route: string, err: Error) => {
             err && err.name !== 'BadRequestError' && this.logger.error(err);
-            const request:string  = this.logger['format'](req)
-            const start:any = req.start;
-            this.logger.info(`${request} status=${res.statusCode} time=${Date.now() - start }`)
+            const request: string = this.logger['format'](req)
+            const start: any = req.start;
+            this.logger.info(`${request} status=${res.statusCode} time=${Date.now() - start}`)
         });
 
         this.server.on('uncaughtEception', (req: IReq, res: IRes, route: string, err: Error) => {
@@ -104,7 +108,7 @@ export class HTTPServer implements IHTTPServer {
 
         this.server.on('BadRequest', (req: any, res: any, err: any, cb: Function) => {
             if (err.jse_cause) {
-                err.body.message = JSON.stringify({errors: err.jse_cause.errors})
+                err.body.message = JSON.stringify({ errors: err.jse_cause.errors })
             }
             cb()
         });
@@ -112,7 +116,7 @@ export class HTTPServer implements IHTTPServer {
         this.server.on('NotFound', (req: any, res: any, err: any, cb: Function) => {
             // req.uuid = uuid()
             req.start = Date.now()
-            
+
             const page = `
             <h1>404</h1>
             `;
@@ -124,7 +128,7 @@ export class HTTPServer implements IHTTPServer {
 
         this.server.listen(this.port)
     }
-    public close( cb : Function) : void {
+    public close(cb: Function): void {
         this.server.close(cb)
     }
 }

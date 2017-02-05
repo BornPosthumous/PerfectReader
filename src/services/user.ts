@@ -1,11 +1,11 @@
-import {IDatabase} from "pg-promise";
-import {injectable, inject} from "inversify";
-import {hash, compare} from "bcrypt";
-import {Validator} from "validator.ts/Validator";
-import {IsLength, IsEmail, IsNumeric} from "validator.ts/decorator/Validation";
-import {promisify} from "bluebird";
+import { IDatabase } from "pg-promise";
+import { injectable, inject } from "inversify";
+import { hash, compare } from "bcrypt";
+import { Validator } from "validator.ts/Validator";
+import { IsLength, IsEmail, IsNumeric } from "validator.ts/decorator/Validation";
+import { promisify } from "bluebird";
 import __ from "../config/constants";
-import {IExtensions} from "../db";
+import { IExtensions } from "../db";
 import ISessionService from "../interfaces/session-service";
 import IUserService from "../interfaces/user-service";
 import ILogger from "../interfaces/logger";
@@ -20,11 +20,17 @@ const compareAsync = promisify(compare);
 
 @injectable()
 class UserService implements IUserService {
-    @inject(__.Database) db: IDatabase<IExtensions> & IExtensions;
-    @inject(__.SessionService) session: ISessionService;
     private logger: ILogger;
-
-    public constructor( @inject(__.LoggerFactory) LoggerFactory: ILoggerFactory) {
+    db: any;
+    session: any;
+    public constructor(
+        @inject(__.LoggerFactory) LoggerFactory: ILoggerFactory,
+        @inject(__.Database) db: IDatabase<IExtensions> & IExtensions,
+        @inject(__.SessionService) session: ISessionService
+    ) {
+        this.session = session;
+        this.db = db;
+        console.log("Getlogger")
         this.logger = LoggerFactory.getLogger(this)
     }
 
@@ -48,6 +54,7 @@ class UserService implements IUserService {
     }
 
     public async add(req: IUser): Promise<Number> {
+        console.log("REquest", req)
         const emailExists = await this.db.users.findByEmail(req.email);
         if (emailExists) {
             throw new Error('Email already exists')
@@ -60,8 +67,8 @@ class UserService implements IUserService {
     }
 
     public async updatePassword(userId: number, oldPassword: string, newPassword: string) {
-        const user = <IUser> await this.db.users.find(userId);
-        const passwordHash = user.password;
+        const user = <IUser>await this.db.users.find(userId);
+        const passwordHash = <string>user.password;
         const candidateHash = await hashAsync(oldPassword, SALT_WORK_FACTOR);
         const valid = await compareAsync(candidateHash, passwordHash);
         if (valid) {
@@ -72,7 +79,7 @@ class UserService implements IUserService {
     }
 
     public async authenticate(candidate: string, user: IUser): Promise<String> {
-        const { password }  = await this.db.users.findPasswordHashById(+user.id);
+        const { password } = await this.db.users.findPasswordHashById(+user.id);
         if (!hash) {
             return Promise.reject(new Error('User not found'))
         }

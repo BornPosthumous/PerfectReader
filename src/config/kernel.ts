@@ -39,6 +39,7 @@ kernel
 
 kernel.bind<IServerConfig>(__.ServerConfig)
     .toConstantValue(<IServerConfig>ServerConfig)
+
 kernel
     .bind<IHTTPServer>(__.HTTPServer)
     .to(HTTPServer)
@@ -62,7 +63,7 @@ kernel
     .bind<ISessionService>(__.SessionService)
     .to(SessionService)
     .inSingletonScope();
-    
+
 // CacheService -
 kernel
 .bind<ICacheService>(__.CacheService)
@@ -73,7 +74,7 @@ kernel
     .bind<IController>(<any>TYPE.Controller)
     .to(TextsController)
     .whenTargetNamed('TextsController')
-    
+
 kernel
     .bind<IController>(<any>TYPE.Controller)
     .to(ParagraphsController)
@@ -102,5 +103,6 @@ kernel
 kernel.bind<IController>(<any> TYPE.Controller)
     .to(UsersController)
     .whenTargetNamed('UsersController');
+
 kernel.bind<IApp>(__.App)
     .to(App)

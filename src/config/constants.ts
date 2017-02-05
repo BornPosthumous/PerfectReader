@@ -9,7 +9,7 @@ export const __ = {
 
     HTTPServer: Symbol('HTTPServer'),
     ServerConfig: Symbol('ServerConfig'),
-    // Router: Symbol('Router'),
+    Router: Symbol('Router'),
 
     UserService: Symbol('UserService'),
     SessionService: Symbol('SessionService'),

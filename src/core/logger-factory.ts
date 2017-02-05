@@ -4,7 +4,7 @@ import ILogger from "../interfaces/logger";
 
 @injectable()
 export class LoggerFactory {
-    private static makeDefaultConfig(): LoggerOptions {
+    private static makeDefaultConfig(): any {
         return { name: '', serializers }
     }
     

@@ -45,10 +45,14 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
+	console.log("Main");
 	const kernel_1 = __webpack_require__(1);
 	const constants_1 = __webpack_require__(4);
+	console.log("APP");
 	const app = kernel_1.kernel.get(constants_1.__.App);
+	console.log("Bootstrapping");
 	app.bootstrap();
+	console.log("Bootstrapped");
 
 
 /***/ },
@@ -163,7 +167,7 @@
 	    LoggerFactory: Symbol('LoggerFactory'),
 	    HTTPServer: Symbol('HTTPServer'),
 	    ServerConfig: Symbol('ServerConfig'),
-	    // Router: Symbol('Router'),
+	    Router: Symbol('Router'),
 	    UserService: Symbol('UserService'),
 	    SessionService: Symbol('SessionService'),
 	    CacheService: Symbol('CacheService'),
@@ -201,9 +205,11 @@
 	const kernel_1 = __webpack_require__(1);
 	const constants_1 = __webpack_require__(4);
 	let HTTPServer = class HTTPServer {
-	    constructor(serverConfig) {
+	    constructor(serverConfig, session, LoggerFactory) {
 	        this.toBootstrap = [];
+	        this.session = session;
 	        this._serverConfig = serverConfig;
+	        this.LoggerFactory = LoggerFactory;
 	        this.port = this._serverConfig.port;
 	        this.router = new inversify_restify_utils_1.InversifyRestifyServer(kernel_1.kernel);
 	    }
@@ -230,6 +236,7 @@
 	                this.logger.info(`Creating server`);
 	                next();
 	            });
+	            app.use(restify_1.CORS());
 	            app.use(restify_1.queryParser());
 	            app.use(restify_1.bodyParser());
 	        })
@@ -285,18 +292,12 @@
 	        this.server.close(cb);
 	    }
 	};
-	__decorate([
-	    inversify_1.inject(constants_1.__.SessionService), 
-	    __metadata('design:type', Object)
-	], HTTPServer.prototype, "session", void 0);
-	__decorate([
-	    inversify_1.inject(constants_1.__.LoggerFactory), 
-	    __metadata('design:type', Object)
-	], HTTPServer.prototype, "LoggerFactory", void 0);
 	HTTPServer = __decorate([
 	    inversify_1.injectable(),
-	    __param(0, inversify_1.inject(constants_1.__.ServerConfig)), 
-	    __metadata('design:paramtypes', [Object])
+	    __param(0, inversify_1.inject(constants_1.__.ServerConfig)),
+	    __param(1, inversify_1.inject(constants_1.__.SessionService)),
+	    __param(2, inversify_1.inject(constants_1.__.LoggerFactory)),
+	    __metadata("design:paramtypes", [Object, Object, Object])
 	], HTTPServer);
 	exports.HTTPServer = HTTPServer;
 
@@ -333,7 +334,7 @@
 	var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
 	    return new (P || (P = Promise))(function (resolve, reject) {
 	        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-	        function rejected(value) { try { step(generator.throw(value)); } catch (e) { reject(e); } }
+	        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
 	        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
 	        step((generator = generator.apply(thisArg, _arguments)).next());
 	    });
@@ -534,79 +535,79 @@
 	    }
 	};
 	__decorate([
-	    inversify_restify_utils_1.Get('/'), 
-	    __metadata('design:type', Function), 
-	    __metadata('design:paramtypes', [Object, Object, Function]), 
-	    __metadata('design:returntype', Promise)
+	    inversify_restify_utils_1.Get('/'),
+	    __metadata("design:type", Function),
+	    __metadata("design:paramtypes", [Object, Object, Function]),
+	    __metadata("design:returntype", Promise)
 	], TextsController.prototype, "index", null);
 	__decorate([
-	    inversify_restify_utils_1.Post('/ocr'), 
-	    __metadata('design:type', Function), 
-	    __metadata('design:paramtypes', [Object, Object, Function]), 
-	    __metadata('design:returntype', Promise)
+	    inversify_restify_utils_1.Post('/ocr'),
+	    __metadata("design:type", Function),
+	    __metadata("design:paramtypes", [Object, Object, Function]),
+	    __metadata("design:returntype", Promise)
 	], TextsController.prototype, "getTextFromOCR", null);
 	__decorate([
-	    inversify_restify_utils_1.Post('/convert'), 
-	    __metadata('design:type', Function), 
-	    __metadata('design:paramtypes', [Object, Object, Function]), 
-	    __metadata('design:returntype', Promise)
+	    inversify_restify_utils_1.Post('/convert'),
+	    __metadata("design:type", Function),
+	    __metadata("design:paramtypes", [Object, Object, Function]),
+	    __metadata("design:returntype", Promise)
 	], TextsController.prototype, "toParagraph", null);
 	__decorate([
 	    validate_1.default,
-	    inversify_restify_utils_1.Post('/add/raw'), 
-	    __metadata('design:type', Function), 
-	    __metadata('design:paramtypes', [Object, Object, Function]), 
-	    __metadata('design:returntype', Promise)
+	    inversify_restify_utils_1.Post('/add/raw'),
+	    __metadata("design:type", Function),
+	    __metadata("design:paramtypes", [Object, Object, Function]),
+	    __metadata("design:returntype", Promise)
 	], TextsController.prototype, "addText", null);
 	__decorate([
 	    validate_1.default,
-	    inversify_restify_utils_1.Post('/add/fs'), 
-	    __metadata('design:type', Function), 
-	    __metadata('design:paramtypes', [Object, Object, Function]), 
-	    __metadata('design:returntype', Promise)
+	    inversify_restify_utils_1.Post('/add/fs'),
+	    __metadata("design:type", Function),
+	    __metadata("design:paramtypes", [Object, Object, Function]),
+	    __metadata("design:returntype", Promise)
 	], TextsController.prototype, "addTextFromFS", null);
 	__decorate([
 	    validate_1.default,
-	    inversify_restify_utils_1.Post('/add/url'), 
-	    __metadata('design:type', Function), 
-	    __metadata('design:paramtypes', [Object, Object, Function]), 
-	    __metadata('design:returntype', Promise)
+	    inversify_restify_utils_1.Post('/add/url'),
+	    __metadata("design:type", Function),
+	    __metadata("design:paramtypes", [Object, Object, Function]),
+	    __metadata("design:returntype", Promise)
 	], TextsController.prototype, "addTextFromURL", null);
 	__decorate([
 	    validate_1.default,
-	    inversify_restify_utils_1.Post('/getID'), 
-	    __metadata('design:type', Function), 
-	    __metadata('design:paramtypes', [Object, Object, Function]), 
-	    __metadata('design:returntype', Promise)
+	    inversify_restify_utils_1.Post('/getID'),
+	    __metadata("design:type", Function),
+	    __metadata("design:paramtypes", [Object, Object, Function]),
+	    __metadata("design:returntype", Promise)
 	], TextsController.prototype, "findByID", null);
 	__decorate([
 	    validate_1.default,
-	    inversify_restify_utils_1.Delete('/deleteID'), 
-	    __metadata('design:type', Function), 
-	    __metadata('design:paramtypes', [Object, Object, Function]), 
-	    __metadata('design:returntype', Promise)
+	    inversify_restify_utils_1.Delete('/deleteID'),
+	    __metadata("design:type", Function),
+	    __metadata("design:paramtypes", [Object, Object, Function]),
+	    __metadata("design:returntype", Promise)
 	], TextsController.prototype, "removeByID", null);
 	__decorate([
 	    validate_1.default,
-	    inversify_restify_utils_1.Post('/update/text'), 
-	    __metadata('design:type', Function), 
-	    __metadata('design:paramtypes', [Object, Object, Function]), 
-	    __metadata('design:returntype', Promise)
+	    inversify_restify_utils_1.Post('/update/text'),
+	    __metadata("design:type", Function),
+	    __metadata("design:paramtypes", [Object, Object, Function]),
+	    __metadata("design:returntype", Promise)
 	], TextsController.prototype, "update", null);
 	__decorate([
 	    validate_1.default,
-	    inversify_restify_utils_1.Post('/update/title'), 
-	    __metadata('design:type', Function), 
-	    __metadata('design:paramtypes', [Object, Object, Function]), 
-	    __metadata('design:returntype', Promise)
+	    inversify_restify_utils_1.Post('/update/title'),
+	    __metadata("design:type", Function),
+	    __metadata("design:paramtypes", [Object, Object, Function]),
+	    __metadata("design:returntype", Promise)
 	], TextsController.prototype, "updateTitle", null);
 	TextsController = __decorate([
 	    inversify_restify_utils_1.Controller(`${constants_1.API_BASE}/texts`),
 	    inversify_1.injectable(),
 	    __param(0, inversify_1.inject(constants_1.__.TextsService)),
 	    __param(1, inversify_1.inject(constants_1.__.LoggerFactory)),
-	    __param(2, inversify_1.inject(constants_1.__.ParagraphsService)), 
-	    __metadata('design:paramtypes', [Object, Object, Object])
+	    __param(2, inversify_1.inject(constants_1.__.ParagraphsService)),
+	    __metadata("design:paramtypes", [Object, Object, Object])
 	], TextsController);
 	exports.TextsController = TextsController;
 
@@ -616,12 +617,12 @@
 /***/ function(module, exports) {
 
 	"use strict";
+	var Source;
 	(function (Source) {
 	    Source[Source["FS"] = 1] = "FS";
 	    Source[Source["HTTP"] = 2] = "HTTP";
 	    Source[Source["TEXT"] = 3] = "TEXT";
-	})(exports.Source || (exports.Source = {}));
-	var Source = exports.Source;
+	})(Source = exports.Source || (exports.Source = {}));
 
 
 /***/ },
@@ -641,7 +642,7 @@
 	var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
 	    return new (P || (P = Promise))(function (resolve, reject) {
 	        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-	        function rejected(value) { try { step(generator.throw(value)); } catch (e) { reject(e); } }
+	        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
 	        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
 	        step((generator = generator.apply(thisArg, _arguments)).next());
 	    });
@@ -677,8 +678,8 @@
 	    }
 	};
 	TextReader = __decorate([
-	    inversify_1.injectable(), 
-	    __metadata('design:paramtypes', [Number])
+	    inversify_1.injectable(),
+	    __metadata("design:paramtypes", [Number])
 	], TextReader);
 	exports.TextReader = TextReader;
 	class TextProcessor {
@@ -695,8 +696,8 @@
 	    get(text) { return Promise.resolve(text); }
 	};
 	RawText = __decorate([
-	    inversify_1.injectable(), 
-	    __metadata('design:paramtypes', [])
+	    inversify_1.injectable(),
+	    __metadata("design:paramtypes", [])
 	], RawText);
 	exports.RawText = RawText;
 	let FileText = class FileText {
@@ -707,8 +708,8 @@
 	    }
 	};
 	FileText = __decorate([
-	    inversify_1.injectable(), 
-	    __metadata('design:paramtypes', [])
+	    inversify_1.injectable(),
+	    __metadata("design:paramtypes", [])
 	], FileText);
 	exports.FileText = FileText;
 	let UrlText = class UrlText {
@@ -721,8 +722,8 @@
 	    }
 	};
 	UrlText = __decorate([
-	    inversify_1.injectable(), 
-	    __metadata('design:paramtypes', [])
+	    inversify_1.injectable(),
+	    __metadata("design:paramtypes", [])
 	], UrlText);
 	exports.UrlText = UrlText;
 
@@ -870,8 +871,8 @@
 	    }
 	}
 	__decorate([
-	    Validation_1.IsNumeric(), 
-	    __metadata('design:type', String)
+	    Validation_1.IsNumeric(),
+	    __metadata("design:type", String)
 	], findByID.prototype, "id", void 0);
 	class addText {
 	    constructor() {
@@ -880,12 +881,12 @@
 	    }
 	}
 	__decorate([
-	    Validation_1.NotEmpty(), 
-	    __metadata('design:type', String)
+	    Validation_1.NotEmpty(),
+	    __metadata("design:type", String)
 	], addText.prototype, "title", void 0);
 	__decorate([
-	    Validation_1.NotEmpty(), 
-	    __metadata('design:type', String)
+	    Validation_1.NotEmpty(),
+	    __metadata("design:type", String)
 	], addText.prototype, "text", void 0);
 	class addTextFromFS {
 	    constructor() {
@@ -894,12 +895,12 @@
 	    }
 	}
 	__decorate([
-	    Validation_1.NotEmpty(), 
-	    __metadata('design:type', String)
+	    Validation_1.NotEmpty(),
+	    __metadata("design:type", String)
 	], addTextFromFS.prototype, "title", void 0);
 	__decorate([
-	    Validation_1.NotEmpty(), 
-	    __metadata('design:type', String)
+	    Validation_1.NotEmpty(),
+	    __metadata("design:type", String)
 	], addTextFromFS.prototype, "path", void 0);
 	class addTextFromURL {
 	    constructor() {
@@ -908,12 +909,12 @@
 	    }
 	}
 	__decorate([
-	    Validation_1.NotEmpty(), 
-	    __metadata('design:type', String)
+	    Validation_1.NotEmpty(),
+	    __metadata("design:type", String)
 	], addTextFromURL.prototype, "title", void 0);
 	__decorate([
-	    Validation_1.NotEmpty(), 
-	    __metadata('design:type', String)
+	    Validation_1.NotEmpty(),
+	    __metadata("design:type", String)
 	], addTextFromURL.prototype, "url", void 0);
 	class removeByID {
 	    constructor() {
@@ -921,8 +922,8 @@
 	    }
 	}
 	__decorate([
-	    Validation_1.IsNumeric(), 
-	    __metadata('design:type', String)
+	    Validation_1.IsNumeric(),
+	    __metadata("design:type", String)
 	], removeByID.prototype, "id", void 0);
 	class update {
 	    constructor() {
@@ -931,12 +932,12 @@
 	    }
 	}
 	__decorate([
-	    Validation_1.IsNumeric(), 
-	    __metadata('design:type', String)
+	    Validation_1.IsNumeric(),
+	    __metadata("design:type", String)
 	], update.prototype, "id", void 0);
 	__decorate([
-	    Validation_1.NotEmpty(), 
-	    __metadata('design:type', String)
+	    Validation_1.NotEmpty(),
+	    __metadata("design:type", String)
 	], update.prototype, "text", void 0);
 	class updateTitle {
 	    constructor() {
@@ -945,12 +946,12 @@
 	    }
 	}
 	__decorate([
-	    Validation_1.IsNumeric(), 
-	    __metadata('design:type', String)
+	    Validation_1.IsNumeric(),
+	    __metadata("design:type", String)
 	], updateTitle.prototype, "id", void 0);
 	__decorate([
-	    Validation_1.NotEmpty(), 
-	    __metadata('design:type', String)
+	    Validation_1.NotEmpty(),
+	    __metadata("design:type", String)
 	], updateTitle.prototype, "title", void 0);
 	const TextsController = {
 	    update,
@@ -992,8 +993,8 @@
 	    }
 	}
 	__decorate([
-	    Validation_1.IsNumeric(), 
-	    __metadata('design:type', String)
+	    Validation_1.IsNumeric(),
+	    __metadata("design:type", String)
 	], findByID.prototype, "id", void 0);
 	class addParagraph {
 	    constructor() {
@@ -1002,12 +1003,12 @@
 	    }
 	}
 	__decorate([
-	    Validation_1.IsNumeric(), 
-	    __metadata('design:type', String)
+	    Validation_1.IsNumeric(),
+	    __metadata("design:type", String)
 	], addParagraph.prototype, "book_id", void 0);
 	__decorate([
-	    Validation_1.NotEmpty(), 
-	    __metadata('design:type', String)
+	    Validation_1.NotEmpty(),
+	    __metadata("design:type", String)
 	], addParagraph.prototype, "paragraph", void 0);
 	class removeByID {
 	    constructor() {
@@ -1015,8 +1016,8 @@
 	    }
 	}
 	__decorate([
-	    Validation_1.IsNumeric(), 
-	    __metadata('design:type', String)
+	    Validation_1.IsNumeric(),
+	    __metadata("design:type", String)
 	], removeByID.prototype, "id", void 0);
 	class update {
 	    constructor() {
@@ -1025,12 +1026,12 @@
 	    }
 	}
 	__decorate([
-	    Validation_1.IsNumeric(), 
-	    __metadata('design:type', String)
+	    Validation_1.IsNumeric(),
+	    __metadata("design:type", String)
 	], update.prototype, "id", void 0);
 	__decorate([
-	    Validation_1.NotEmpty(), 
-	    __metadata('design:type', String)
+	    Validation_1.NotEmpty(),
+	    __metadata("design:type", String)
 	], update.prototype, "paragraph", void 0);
 	class getBook {
 	    constructor() {
@@ -1038,8 +1039,8 @@
 	    }
 	}
 	__decorate([
-	    Validation_1.IsNumeric(), 
-	    __metadata('design:type', String)
+	    Validation_1.IsNumeric(),
+	    __metadata("design:type", String)
 	], getBook.prototype, "book_id", void 0);
 	const ParagraphsController = {
 	    update,
@@ -1073,8 +1074,8 @@
 	    }
 	}
 	__decorate([
-	    Validation_1.IsNumeric(), 
-	    __metadata('design:type', String)
+	    Validation_1.IsNumeric(),
+	    __metadata("design:type", String)
 	], findByID.prototype, "id", void 0);
 	class addHighlight {
 	    constructor() {
@@ -1086,24 +1087,24 @@
 	    }
 	}
 	__decorate([
-	    Validation_1.IsNumeric(), 
-	    __metadata('design:type', String)
+	    Validation_1.IsNumeric(),
+	    __metadata("design:type", String)
 	], addHighlight.prototype, "book_id", void 0);
 	__decorate([
-	    Validation_1.IsNumeric(), 
-	    __metadata('design:type', String)
+	    Validation_1.IsNumeric(),
+	    __metadata("design:type", String)
 	], addHighlight.prototype, "paragraph_id", void 0);
 	__decorate([
-	    Validation_1.IsNumeric(), 
-	    __metadata('design:type', String)
+	    Validation_1.IsNumeric(),
+	    __metadata("design:type", String)
 	], addHighlight.prototype, "start", void 0);
 	__decorate([
-	    Validation_1.IsNumeric(), 
-	    __metadata('design:type', String)
+	    Validation_1.IsNumeric(),
+	    __metadata("design:type", String)
 	], addHighlight.prototype, "end", void 0);
 	__decorate([
-	    Validation_1.NotEmpty(), 
-	    __metadata('design:type', String)
+	    Validation_1.NotEmpty(),
+	    __metadata("design:type", String)
 	], addHighlight.prototype, "text", void 0);
 	class removeByID {
 	    constructor() {
@@ -1111,8 +1112,8 @@
 	    }
 	}
 	__decorate([
-	    Validation_1.IsNumeric(), 
-	    __metadata('design:type', String)
+	    Validation_1.IsNumeric(),
+	    __metadata("design:type", String)
 	], removeByID.prototype, "id", void 0);
 	class update {
 	    constructor() {
@@ -1121,12 +1122,12 @@
 	    }
 	}
 	__decorate([
-	    Validation_1.IsNumeric(), 
-	    __metadata('design:type', String)
+	    Validation_1.IsNumeric(),
+	    __metadata("design:type", String)
 	], update.prototype, "id", void 0);
 	__decorate([
-	    Validation_1.NotEmpty(), 
-	    __metadata('design:type', String)
+	    Validation_1.NotEmpty(),
+	    __metadata("design:type", String)
 	], update.prototype, "text", void 0);
 	class getBook {
 	    constructor() {
@@ -1134,8 +1135,8 @@
 	    }
 	}
 	__decorate([
-	    Validation_1.IsNumeric(), 
-	    __metadata('design:type', String)
+	    Validation_1.IsNumeric(),
+	    __metadata("design:type", String)
 	], getBook.prototype, "book_id", void 0);
 	class getParagraph {
 	    constructor() {
@@ -1144,12 +1145,12 @@
 	    }
 	}
 	__decorate([
-	    Validation_1.IsNumeric(), 
-	    __metadata('design:type', String)
+	    Validation_1.IsNumeric(),
+	    __metadata("design:type", String)
 	], getParagraph.prototype, "book_id", void 0);
 	__decorate([
-	    Validation_1.IsNumeric(), 
-	    __metadata('design:type', String)
+	    Validation_1.IsNumeric(),
+	    __metadata("design:type", String)
 	], getParagraph.prototype, "paragraph_id", void 0);
 	const HighlightController = {
 	    update,
@@ -1185,13 +1186,12 @@
 	    }
 	}
 	__decorate([
-	    Validation_1.IsEmail(), 
-	    __metadata('design:type', String)
+	    Validation_1.IsEmail(),
+	    __metadata("design:type", String)
 	], authenticate.prototype, "email", void 0);
 	__decorate([
-	    // TODO: It sucks to have to initialize these
-	    Validation_1.IsLength(6, 20), 
-	    __metadata('design:type', String)
+	    Validation_1.IsLength(6, 20),
+	    __metadata("design:type", String)
 	], authenticate.prototype, "password", void 0);
 	class create {
 	    constructor() {
@@ -1203,24 +1203,24 @@
 	    }
 	}
 	__decorate([
-	    Validation_1.IsLength(3, 20), 
-	    __metadata('design:type', String)
+	    Validation_1.IsLength(3, 20),
+	    __metadata("design:type", String)
 	], create.prototype, "fname", void 0);
 	__decorate([
-	    Validation_1.IsLength(3, 20), 
-	    __metadata('design:type', String)
+	    Validation_1.IsLength(3, 20),
+	    __metadata("design:type", String)
 	], create.prototype, "lname", void 0);
 	__decorate([
-	    Validation_1.IsLength(6, 20), 
-	    __metadata('design:type', String)
+	    Validation_1.IsLength(6, 20),
+	    __metadata("design:type", String)
 	], create.prototype, "username", void 0);
 	__decorate([
-	    Validation_1.IsLength(6, 20), 
-	    __metadata('design:type', String)
+	    Validation_1.IsLength(6, 20),
+	    __metadata("design:type", String)
 	], create.prototype, "password", void 0);
 	__decorate([
-	    Validation_1.IsEmail(), 
-	    __metadata('design:type', String)
+	    Validation_1.IsEmail(),
+	    __metadata("design:type", String)
 	], create.prototype, "email", void 0);
 	const UsersController = {
 	    authenticate,
@@ -1250,7 +1250,7 @@
 	var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
 	    return new (P || (P = Promise))(function (resolve, reject) {
 	        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-	        function rejected(value) { try { step(generator.throw(value)); } catch (e) { reject(e); } }
+	        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
 	        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
 	        step((generator = generator.apply(thisArg, _arguments)).next());
 	    });
@@ -1375,59 +1375,59 @@
 	    }
 	};
 	__decorate([
-	    inversify_restify_utils_1.Get('/'), 
-	    __metadata('design:type', Function), 
-	    __metadata('design:paramtypes', [Object, Object, Function]), 
-	    __metadata('design:returntype', Promise)
+	    inversify_restify_utils_1.Get('/'),
+	    __metadata("design:type", Function),
+	    __metadata("design:paramtypes", [Object, Object, Function]),
+	    __metadata("design:returntype", Promise)
 	], HighlightController.prototype, "index", null);
 	__decorate([
 	    validate_1.default,
-	    inversify_restify_utils_1.Post('/get/book'), 
-	    __metadata('design:type', Function), 
-	    __metadata('design:paramtypes', [Object, Object, Function]), 
-	    __metadata('design:returntype', Promise)
+	    inversify_restify_utils_1.Post('/get/book'),
+	    __metadata("design:type", Function),
+	    __metadata("design:paramtypes", [Object, Object, Function]),
+	    __metadata("design:returntype", Promise)
 	], HighlightController.prototype, "getBook", null);
 	__decorate([
 	    validate_1.default,
-	    inversify_restify_utils_1.Post('/get'), 
-	    __metadata('design:type', Function), 
-	    __metadata('design:paramtypes', [Object, Object, Function]), 
-	    __metadata('design:returntype', Promise)
+	    inversify_restify_utils_1.Post('/get'),
+	    __metadata("design:type", Function),
+	    __metadata("design:paramtypes", [Object, Object, Function]),
+	    __metadata("design:returntype", Promise)
 	], HighlightController.prototype, "findByID", null);
 	__decorate([
 	    validate_1.default,
-	    inversify_restify_utils_1.Post('/get/paragraph'), 
-	    __metadata('design:type', Function), 
-	    __metadata('design:paramtypes', [Object, Object, Function]), 
-	    __metadata('design:returntype', Promise)
+	    inversify_restify_utils_1.Post('/get/paragraph'),
+	    __metadata("design:type", Function),
+	    __metadata("design:paramtypes", [Object, Object, Function]),
+	    __metadata("design:returntype", Promise)
 	], HighlightController.prototype, "getParagraph", null);
 	__decorate([
 	    validate_1.default,
-	    inversify_restify_utils_1.Post('/add'), 
-	    __metadata('design:type', Function), 
-	    __metadata('design:paramtypes', [Object, Object, Function]), 
-	    __metadata('design:returntype', Promise)
+	    inversify_restify_utils_1.Post('/add'),
+	    __metadata("design:type", Function),
+	    __metadata("design:paramtypes", [Object, Object, Function]),
+	    __metadata("design:returntype", Promise)
 	], HighlightController.prototype, "addHighlight", null);
 	__decorate([
 	    validate_1.default,
-	    inversify_restify_utils_1.Post('/update/text'), 
-	    __metadata('design:type', Function), 
-	    __metadata('design:paramtypes', [Object, Object, Function]), 
-	    __metadata('design:returntype', Promise)
+	    inversify_restify_utils_1.Post('/update/text'),
+	    __metadata("design:type", Function),
+	    __metadata("design:paramtypes", [Object, Object, Function]),
+	    __metadata("design:returntype", Promise)
 	], HighlightController.prototype, "update", null);
 	__decorate([
 	    validate_1.default,
-	    inversify_restify_utils_1.Delete('/deleteID'), 
-	    __metadata('design:type', Function), 
-	    __metadata('design:paramtypes', [Object, Object, Function]), 
-	    __metadata('design:returntype', Promise)
+	    inversify_restify_utils_1.Delete('/deleteID'),
+	    __metadata("design:type", Function),
+	    __metadata("design:paramtypes", [Object, Object, Function]),
+	    __metadata("design:returntype", Promise)
 	], HighlightController.prototype, "removeByID", null);
 	HighlightController = __decorate([
 	    inversify_restify_utils_1.Controller(`${constants_1.API_BASE}/highlights`),
 	    inversify_1.injectable(),
 	    __param(0, inversify_1.inject(constants_1.__.LoggerFactory)),
-	    __param(1, inversify_1.inject(constants_1.__.HighlightService)), 
-	    __metadata('design:paramtypes', [Object, Object])
+	    __param(1, inversify_1.inject(constants_1.__.HighlightService)),
+	    __metadata("design:paramtypes", [Object, Object])
 	], HighlightController);
 	exports.HighlightController = HighlightController;
 
@@ -1452,7 +1452,7 @@
 	var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
 	    return new (P || (P = Promise))(function (resolve, reject) {
 	        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-	        function rejected(value) { try { step(generator.throw(value)); } catch (e) { reject(e); } }
+	        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
 	        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
 	        step((generator = generator.apply(thisArg, _arguments)).next());
 	    });
@@ -1560,52 +1560,52 @@
 	    }
 	};
 	__decorate([
-	    inversify_restify_utils_1.Get('/'), 
-	    __metadata('design:type', Function), 
-	    __metadata('design:paramtypes', [Object, Object, Function]), 
-	    __metadata('design:returntype', Promise)
+	    inversify_restify_utils_1.Get('/'),
+	    __metadata("design:type", Function),
+	    __metadata("design:paramtypes", [Object, Object, Function]),
+	    __metadata("design:returntype", Promise)
 	], ParagraphsController.prototype, "index", null);
 	__decorate([
 	    validate_1.default,
-	    inversify_restify_utils_1.Post('/book'), 
-	    __metadata('design:type', Function), 
-	    __metadata('design:paramtypes', [Object, Object, Function]), 
-	    __metadata('design:returntype', Promise)
+	    inversify_restify_utils_1.Post('/book'),
+	    __metadata("design:type", Function),
+	    __metadata("design:paramtypes", [Object, Object, Function]),
+	    __metadata("design:returntype", Promise)
 	], ParagraphsController.prototype, "getBook", null);
 	__decorate([
 	    validate_1.default,
-	    inversify_restify_utils_1.Post('/getID'), 
-	    __metadata('design:type', Function), 
-	    __metadata('design:paramtypes', [Object, Object, Function]), 
-	    __metadata('design:returntype', Promise)
+	    inversify_restify_utils_1.Post('/getID'),
+	    __metadata("design:type", Function),
+	    __metadata("design:paramtypes", [Object, Object, Function]),
+	    __metadata("design:returntype", Promise)
 	], ParagraphsController.prototype, "findByID", null);
 	__decorate([
 	    validate_1.default,
-	    inversify_restify_utils_1.Post('/add'), 
-	    __metadata('design:type', Function), 
-	    __metadata('design:paramtypes', [Object, Object, Function]), 
-	    __metadata('design:returntype', Promise)
+	    inversify_restify_utils_1.Post('/add'),
+	    __metadata("design:type", Function),
+	    __metadata("design:paramtypes", [Object, Object, Function]),
+	    __metadata("design:returntype", Promise)
 	], ParagraphsController.prototype, "addParagraph", null);
 	__decorate([
 	    validate_1.default,
-	    inversify_restify_utils_1.Post('/update'), 
-	    __metadata('design:type', Function), 
-	    __metadata('design:paramtypes', [Object, Object, Function]), 
-	    __metadata('design:returntype', Promise)
+	    inversify_restify_utils_1.Post('/update'),
+	    __metadata("design:type", Function),
+	    __metadata("design:paramtypes", [Object, Object, Function]),
+	    __metadata("design:returntype", Promise)
 	], ParagraphsController.prototype, "update", null);
 	__decorate([
 	    validate_1.default,
-	    inversify_restify_utils_1.Delete('/deleteID'), 
-	    __metadata('design:type', Function), 
-	    __metadata('design:paramtypes', [Object, Object, Function]), 
-	    __metadata('design:returntype', Promise)
+	    inversify_restify_utils_1.Delete('/deleteID'),
+	    __metadata("design:type", Function),
+	    __metadata("design:paramtypes", [Object, Object, Function]),
+	    __metadata("design:returntype", Promise)
 	], ParagraphsController.prototype, "removeByID", null);
 	ParagraphsController = __decorate([
 	    inversify_restify_utils_1.Controller(`${constants_1.API_BASE}/paragraphs`),
 	    inversify_1.injectable(),
 	    __param(0, inversify_1.inject(constants_1.__.LoggerFactory)),
-	    __param(1, inversify_1.inject(constants_1.__.ParagraphsService)), 
-	    __metadata('design:paramtypes', [Object, Object])
+	    __param(1, inversify_1.inject(constants_1.__.ParagraphsService)),
+	    __metadata("design:paramtypes", [Object, Object])
 	], ParagraphsController);
 	exports.ParagraphsController = ParagraphsController;
 
@@ -1630,7 +1630,7 @@
 	var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
 	    return new (P || (P = Promise))(function (resolve, reject) {
 	        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-	        function rejected(value) { try { step(generator.throw(value)); } catch (e) { reject(e); } }
+	        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
 	        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
 	        step((generator = generator.apply(thisArg, _arguments)).next());
 	    });
@@ -1644,7 +1644,8 @@
 	//TODO must find a way to fix JIMP asynchronicity
 	//TODO how do we make the timeout period longer for ocrTextFromFS
 	let TextsService = class TextsService {
-	    constructor(LoggerFactory) {
+	    constructor(LoggerFactory, db) {
+	        this.db = db;
 	        this.logger = LoggerFactory.getLogger(this);
 	    }
 	    onBootstrap() {
@@ -1732,14 +1733,11 @@
 	        });
 	    }
 	};
-	__decorate([
-	    inversify_1.inject(constants_1.__.Database), 
-	    __metadata('design:type', Object)
-	], TextsService.prototype, "db", void 0);
 	TextsService = __decorate([
 	    inversify_1.injectable(),
-	    __param(0, inversify_1.inject(constants_1.__.LoggerFactory)), 
-	    __metadata('design:paramtypes', [Object])
+	    __param(0, inversify_1.inject(constants_1.__.LoggerFactory)),
+	    __param(1, inversify_1.inject(constants_1.__.Database)),
+	    __metadata("design:paramtypes", [Object, Object])
 	], TextsService);
 	exports.TextsService = TextsService;
 
@@ -1776,7 +1774,7 @@
 	var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
 	    return new (P || (P = Promise))(function (resolve, reject) {
 	        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-	        function rejected(value) { try { step(generator.throw(value)); } catch (e) { reject(e); } }
+	        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
 	        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
 	        step((generator = generator.apply(thisArg, _arguments)).next());
 	    });
@@ -1785,7 +1783,8 @@
 	__webpack_require__(3);
 	const constants_1 = __webpack_require__(4);
 	let ParagraphsService = class ParagraphsService {
-	    constructor(LoggerFactory) {
+	    constructor(LoggerFactory, db) {
+	        this.db = db;
 	        this.logger = LoggerFactory.getLogger(this);
 	    }
 	    onBootstrap() {
@@ -1830,14 +1829,11 @@
 	        });
 	    }
 	};
-	__decorate([
-	    inversify_1.inject(constants_1.__.Database), 
-	    __metadata('design:type', Object)
-	], ParagraphsService.prototype, "db", void 0);
 	ParagraphsService = __decorate([
 	    inversify_1.injectable(),
-	    __param(0, inversify_1.inject(constants_1.__.LoggerFactory)), 
-	    __metadata('design:paramtypes', [Object])
+	    __param(0, inversify_1.inject(constants_1.__.LoggerFactory)),
+	    __param(1, inversify_1.inject(constants_1.__.Database)),
+	    __metadata("design:paramtypes", [Object, Object])
 	], ParagraphsService);
 	exports.ParagraphsService = ParagraphsService;
 
@@ -1862,7 +1858,7 @@
 	var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
 	    return new (P || (P = Promise))(function (resolve, reject) {
 	        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-	        function rejected(value) { try { step(generator.throw(value)); } catch (e) { reject(e); } }
+	        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
 	        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
 	        step((generator = generator.apply(thisArg, _arguments)).next());
 	    });
@@ -1870,7 +1866,8 @@
 	const inversify_1 = __webpack_require__(2);
 	const constants_1 = __webpack_require__(4);
 	let HighlightService = class HighlightService {
-	    constructor(LoggerFactory) {
+	    constructor(LoggerFactory, db) {
+	        this.db = db;
 	        this.logger = LoggerFactory.getLogger(this);
 	    }
 	    onBootstrap() {
@@ -1920,14 +1917,11 @@
 	        });
 	    }
 	};
-	__decorate([
-	    inversify_1.inject(constants_1.__.Database), 
-	    __metadata('design:type', Object)
-	], HighlightService.prototype, "db", void 0);
 	HighlightService = __decorate([
 	    inversify_1.injectable(),
-	    __param(0, inversify_1.inject(constants_1.__.LoggerFactory)), 
-	    __metadata('design:paramtypes', [Object])
+	    __param(0, inversify_1.inject(constants_1.__.LoggerFactory)),
+	    __param(1, inversify_1.inject(constants_1.__.Database)),
+	    __metadata("design:paramtypes", [Object, Object])
 	], HighlightService);
 	exports.HighlightService = HighlightService;
 
@@ -1952,7 +1946,7 @@
 	var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
 	    return new (P || (P = Promise))(function (resolve, reject) {
 	        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-	        function rejected(value) { try { step(generator.throw(value)); } catch (e) { reject(e); } }
+	        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
 	        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
 	        step((generator = generator.apply(thisArg, _arguments)).next());
 	    });
@@ -1960,12 +1954,18 @@
 	const inversify_1 = __webpack_require__(2);
 	const constants_1 = __webpack_require__(4);
 	let App = class App {
-	    constructor(LoggerFactory) {
-	        console.log(this.httpServer);
+	    constructor(LoggerFactory, httpServer, textsService, paragraphsService, highlightService, userService, cache) {
+	        this.httpServer = httpServer;
+	        this.paragraphsService = paragraphsService;
+	        this.textsService = textsService;
+	        this.highlightService = highlightService;
+	        this.userService = userService;
+	        this.cache = cache;
 	    }
 	    bootstrap() {
 	        return __awaiter(this, void 0, void 0, function* () {
 	            try {
+	                console.log("Bootstrapping user service");
 	                this.httpServer.onBootstrap(this.userService.onBootstrap.bind(this.userService));
 	                this.httpServer.onBootstrap(this.cache.onBootstrap.bind(this.cache));
 	                this.httpServer.onBootstrap(this.textsService.onBootstrap.bind(this.textsService));
@@ -1985,34 +1985,16 @@
 	        });
 	    }
 	};
-	__decorate([
-	    inversify_1.inject(constants_1.default.HTTPServer), 
-	    __metadata('design:type', Object)
-	], App.prototype, "httpServer", void 0);
-	__decorate([
-	    inversify_1.inject(constants_1.default.TextsService), 
-	    __metadata('design:type', Object)
-	], App.prototype, "textsService", void 0);
-	__decorate([
-	    inversify_1.inject(constants_1.default.ParagraphsService), 
-	    __metadata('design:type', Object)
-	], App.prototype, "paragraphsService", void 0);
-	__decorate([
-	    inversify_1.inject(constants_1.default.HighlightService), 
-	    __metadata('design:type', Object)
-	], App.prototype, "highlightService", void 0);
-	__decorate([
-	    inversify_1.inject(constants_1.default.UserService), 
-	    __metadata('design:type', Object)
-	], App.prototype, "userService", void 0);
-	__decorate([
-	    inversify_1.inject(constants_1.default.CacheService), 
-	    __metadata('design:type', Object)
-	], App.prototype, "cache", void 0);
 	App = __decorate([
 	    inversify_1.injectable(),
-	    __param(0, inversify_1.inject(constants_1.default.LoggerFactory)), 
-	    __metadata('design:paramtypes', [Object])
+	    __param(0, inversify_1.inject(constants_1.default.LoggerFactory)),
+	    __param(1, inversify_1.inject(constants_1.default.HTTPServer)),
+	    __param(2, inversify_1.inject(constants_1.default.TextsService)),
+	    __param(3, inversify_1.inject(constants_1.default.ParagraphsService)),
+	    __param(4, inversify_1.inject(constants_1.default.HighlightService)),
+	    __param(5, inversify_1.inject(constants_1.default.UserService)),
+	    __param(6, inversify_1.inject(constants_1.default.CacheService)),
+	    __metadata("design:paramtypes", [Object, Object, Object, Object, Object, Object, Object])
 	], App);
 	exports.App = App;
 
@@ -2045,7 +2027,7 @@
 	};
 	const bunyan_1 = __webpack_require__(32);
 	const inversify_1 = __webpack_require__(2);
-	let LoggerFactory_1 = class LoggerFactory {
+	let LoggerFactory = LoggerFactory_1 = class LoggerFactory {
 	    static makeDefaultConfig() {
 	        return { name: '', serializers: bunyan_1.stdSerializers };
 	    }
@@ -2068,14 +2050,14 @@
 	        return LoggerFactory_1.createLogger(name.constructor.toString().match(/class ([\w|_]+)/)[1]);
 	    }
 	};
-	let LoggerFactory = LoggerFactory_1;
-	LoggerFactory.config = LoggerFactory.makeDefaultConfig();
+	LoggerFactory.config = LoggerFactory_1.makeDefaultConfig();
 	LoggerFactory.loggers = {};
 	LoggerFactory = LoggerFactory_1 = __decorate([
-	    inversify_1.injectable(), 
-	    __metadata('design:paramtypes', [])
+	    inversify_1.injectable(),
+	    __metadata("design:paramtypes", [])
 	], LoggerFactory);
 	exports.LoggerFactory = LoggerFactory;
+	var LoggerFactory_1;
 
 
 /***/ },
@@ -2131,8 +2113,8 @@
 	    }
 	};
 	DatabaseProvider = __decorate([
-	    inversify_1.injectable(), 
-	    __metadata('design:paramtypes', [])
+	    inversify_1.injectable(),
+	    __metadata("design:paramtypes", [])
 	], DatabaseProvider);
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.default = DatabaseProvider;
@@ -2158,7 +2140,7 @@
 	var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
 	    return new (P || (P = Promise))(function (resolve, reject) {
 	        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-	        function rejected(value) { try { step(generator.throw(value)); } catch (e) { reject(e); } }
+	        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
 	        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
 	        step((generator = generator.apply(thisArg, _arguments)).next());
 	    });
@@ -2309,7 +2291,7 @@
 	var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
 	    return new (P || (P = Promise))(function (resolve, reject) {
 	        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-	        function rejected(value) { try { step(generator.throw(value)); } catch (e) { reject(e); } }
+	        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
 	        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
 	        step((generator = generator.apply(thisArg, _arguments)).next());
 	    });
@@ -2367,7 +2349,7 @@
 	var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
 	    return new (P || (P = Promise))(function (resolve, reject) {
 	        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-	        function rejected(value) { try { step(generator.throw(value)); } catch (e) { reject(e); } }
+	        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
 	        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
 	        step((generator = generator.apply(thisArg, _arguments)).next());
 	    });
@@ -2435,7 +2417,7 @@
 	var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
 	    return new (P || (P = Promise))(function (resolve, reject) {
 	        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-	        function rejected(value) { try { step(generator.throw(value)); } catch (e) { reject(e); } }
+	        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
 	        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
 	        step((generator = generator.apply(thisArg, _arguments)).next());
 	    });
@@ -2510,7 +2492,7 @@
 	var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
 	    return new (P || (P = Promise))(function (resolve, reject) {
 	        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-	        function rejected(value) { try { step(generator.throw(value)); } catch (e) { reject(e); } }
+	        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
 	        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
 	        step((generator = generator.apply(thisArg, _arguments)).next());
 	    });
@@ -2521,7 +2503,9 @@
 	const constants_1 = __webpack_require__(4);
 	const validate_1 = __webpack_require__(13);
 	let UsersController = class UsersController {
-	    constructor(LoggerFactory) {
+	    constructor(LoggerFactory, userService, db) {
+	        this.userService = userService;
+	        this.db = db;
 	        this.logger = LoggerFactory.getLogger(this);
 	    }
 	    get(req, res, next) {
@@ -2558,44 +2542,38 @@
 	    }
 	};
 	__decorate([
-	    inversify_1.inject(constants_1.default.UserService), 
-	    __metadata('design:type', Object)
-	], UsersController.prototype, "userService", void 0);
-	__decorate([
-	    inversify_1.inject(constants_1.default.Database), 
-	    __metadata('design:type', Object)
-	], UsersController.prototype, "db", void 0);
-	__decorate([
-	    inversify_restify_utils_1.Get('/'), 
-	    __metadata('design:type', Function), 
-	    __metadata('design:paramtypes', [Object, Object, Function]), 
-	    __metadata('design:returntype', Promise)
+	    inversify_restify_utils_1.Get('/'),
+	    __metadata("design:type", Function),
+	    __metadata("design:paramtypes", [Object, Object, Function]),
+	    __metadata("design:returntype", Promise)
 	], UsersController.prototype, "get", null);
 	__decorate([
 	    validate_1.default,
-	    inversify_restify_utils_1.Post('/add'), 
-	    __metadata('design:type', Function), 
-	    __metadata('design:paramtypes', [Object, Object, Function]), 
-	    __metadata('design:returntype', Promise)
+	    inversify_restify_utils_1.Post('/add'),
+	    __metadata("design:type", Function),
+	    __metadata("design:paramtypes", [Object, Object, Function]),
+	    __metadata("design:returntype", Promise)
 	], UsersController.prototype, "create", null);
 	__decorate([
-	    inversify_restify_utils_1.Post('/empty'), 
-	    __metadata('design:type', Function), 
-	    __metadata('design:paramtypes', [Object, Object, Function]), 
-	    __metadata('design:returntype', Promise)
+	    inversify_restify_utils_1.Post('/empty'),
+	    __metadata("design:type", Function),
+	    __metadata("design:paramtypes", [Object, Object, Function]),
+	    __metadata("design:returntype", Promise)
 	], UsersController.prototype, "empty", null);
 	__decorate([
 	    validate_1.default,
-	    inversify_restify_utils_1.Post('/authenticate'), 
-	    __metadata('design:type', Function), 
-	    __metadata('design:paramtypes', [Object, Object, Function]), 
-	    __metadata('design:returntype', Promise)
+	    inversify_restify_utils_1.Post('/authenticate'),
+	    __metadata("design:type", Function),
+	    __metadata("design:paramtypes", [Object, Object, Function]),
+	    __metadata("design:returntype", Promise)
 	], UsersController.prototype, "authenticate", null);
 	UsersController = __decorate([
 	    inversify_1.injectable(),
 	    inversify_restify_utils_1.Controller(`${constants_1.API_BASE}/users`),
-	    __param(0, inversify_1.inject(constants_1.default.LoggerFactory)), 
-	    __metadata('design:paramtypes', [Object])
+	    __param(0, inversify_1.inject(constants_1.default.LoggerFactory)),
+	    __param(1, inversify_1.inject(constants_1.default.UserService)),
+	    __param(2, inversify_1.inject(constants_1.default.Database)),
+	    __metadata("design:paramtypes", [Object, Object, Object])
 	], UsersController);
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.default = UsersController;
@@ -2621,7 +2599,7 @@
 	var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
 	    return new (P || (P = Promise))(function (resolve, reject) {
 	        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-	        function rejected(value) { try { step(generator.throw(value)); } catch (e) { reject(e); } }
+	        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
 	        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
 	        step((generator = generator.apply(thisArg, _arguments)).next());
 	    });
@@ -2637,7 +2615,10 @@
 	const hashAsync = bluebird_1.promisify(bcrypt_1.hash);
 	const compareAsync = bluebird_1.promisify(bcrypt_1.compare);
 	let UserService = class UserService {
-	    constructor(LoggerFactory) {
+	    constructor(LoggerFactory, db, session) {
+	        this.session = session;
+	        this.db = db;
+	        console.log("Getlogger");
 	        this.logger = LoggerFactory.getLogger(this);
 	    }
 	    onBootstrap() {
@@ -2665,6 +2646,7 @@
 	    }
 	    add(req) {
 	        return __awaiter(this, void 0, void 0, function* () {
+	            console.log("REquest", req);
 	            const emailExists = yield this.db.users.findByEmail(req.email);
 	            if (emailExists) {
 	                throw new Error('Email already exists');
@@ -2703,18 +2685,12 @@
 	        });
 	    }
 	};
-	__decorate([
-	    inversify_1.inject(constants_1.default.Database), 
-	    __metadata('design:type', Object)
-	], UserService.prototype, "db", void 0);
-	__decorate([
-	    inversify_1.inject(constants_1.default.SessionService), 
-	    __metadata('design:type', Object)
-	], UserService.prototype, "session", void 0);
 	UserService = __decorate([
 	    inversify_1.injectable(),
-	    __param(0, inversify_1.inject(constants_1.default.LoggerFactory)), 
-	    __metadata('design:paramtypes', [Object])
+	    __param(0, inversify_1.inject(constants_1.default.LoggerFactory)),
+	    __param(1, inversify_1.inject(constants_1.default.Database)),
+	    __param(2, inversify_1.inject(constants_1.default.SessionService)),
+	    __metadata("design:paramtypes", [Object, Object, Object])
 	], UserService);
 	class ValidateUserReq {
 	    set id(id) {
@@ -2722,34 +2698,34 @@
 	    }
 	}
 	__decorate([
-	    Validation_1.IsNumeric(), 
-	    __metadata('design:type', String)
+	    Validation_1.IsNumeric(),
+	    __metadata("design:type", String)
 	], ValidateUserReq.prototype, "_id", void 0);
 	__decorate([
-	    Validation_1.IsLength(6, 20), 
-	    __metadata('design:type', String)
+	    Validation_1.IsLength(6, 20),
+	    __metadata("design:type", String)
 	], ValidateUserReq.prototype, "password", void 0);
 	class User {
 	}
 	__decorate([
-	    Validation_1.IsLength(6, 20), 
-	    __metadata('design:type', String)
+	    Validation_1.IsLength(6, 20),
+	    __metadata("design:type", String)
 	], User.prototype, "username", void 0);
 	__decorate([
-	    Validation_1.IsEmail(), 
-	    __metadata('design:type', String)
+	    Validation_1.IsEmail(),
+	    __metadata("design:type", String)
 	], User.prototype, "email", void 0);
 	__decorate([
-	    Validation_1.IsLength(6, 20), 
-	    __metadata('design:type', String)
+	    Validation_1.IsLength(6, 20),
+	    __metadata("design:type", String)
 	], User.prototype, "password", void 0);
 	__decorate([
-	    Validation_1.IsLength(3, 20), 
-	    __metadata('design:type', String)
+	    Validation_1.IsLength(3, 20),
+	    __metadata("design:type", String)
 	], User.prototype, "fname", void 0);
 	__decorate([
-	    Validation_1.IsLength(3, 20), 
-	    __metadata('design:type', String)
+	    Validation_1.IsLength(3, 20),
+	    __metadata("design:type", String)
 	], User.prototype, "lname", void 0);
 	exports.User = User;
 	Object.defineProperty(exports, "__esModule", { value: true });
@@ -2782,7 +2758,7 @@
 	var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
 	    return new (P || (P = Promise))(function (resolve, reject) {
 	        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-	        function rejected(value) { try { step(generator.throw(value)); } catch (e) { reject(e); } }
+	        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
 	        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
 	        step((generator = generator.apply(thisArg, _arguments)).next());
 	    });
@@ -2798,8 +2774,9 @@
 	const PRIVATE_KEY = fs_1.readFileSync(`${KEY_FILE}/privkey.pem`);
 	const PUBLIC_KEY = fs_1.readFileSync(`${KEY_FILE}/pubkey.pem`);
 	let SessionService = class SessionService {
-	    constructor(LoggerFactory) {
+	    constructor(LoggerFactory, cache) {
 	        this.logger = LoggerFactory.getLogger(this);
+	        this.cache = cache;
 	    }
 	    getSession(token) {
 	        return __awaiter(this, void 0, void 0, function* () {
@@ -2827,14 +2804,11 @@
 	        });
 	    }
 	};
-	__decorate([
-	    inversify_1.inject(constants_1.default.CacheService), 
-	    __metadata('design:type', Object)
-	], SessionService.prototype, "cache", void 0);
 	SessionService = __decorate([
 	    inversify_1.injectable(),
-	    __param(0, inversify_1.inject(constants_1.default.LoggerFactory)), 
-	    __metadata('design:paramtypes', [Object])
+	    __param(0, inversify_1.inject(constants_1.default.LoggerFactory)),
+	    __param(1, inversify_1.inject(constants_1.default.CacheService)),
+	    __metadata("design:paramtypes", [Object, Object])
 	], SessionService);
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.default = SessionService;
@@ -2872,7 +2846,7 @@
 	var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
 	    return new (P || (P = Promise))(function (resolve, reject) {
 	        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-	        function rejected(value) { try { step(generator.throw(value)); } catch (e) { reject(e); } }
+	        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
 	        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
 	        step((generator = generator.apply(thisArg, _arguments)).next());
 	    });
@@ -2933,8 +2907,8 @@
 	};
 	CacheService = __decorate([
 	    inversify_1.injectable(),
-	    __param(0, inversify_1.inject(constants_1.default.LoggerFactory)), 
-	    __metadata('design:paramtypes', [Object])
+	    __param(0, inversify_1.inject(constants_1.default.LoggerFactory)),
+	    __metadata("design:paramtypes", [Object])
 	], CacheService);
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.default = CacheService;

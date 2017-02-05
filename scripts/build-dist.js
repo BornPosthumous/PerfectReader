@@ -14,8 +14,10 @@ const log = (err, stats) => {
     }
 }
 
-void function Main() {
-    let [,, watch] = process.argv
+void
+
+function Main() {
+    let [, , watch] = process.argv
 
     if (watch === '--watch' || watch === '-w') {
         return compiler.watch({
