@@ -60,8 +60,6 @@ export class HTTPServer implements IHTTPServer {
             .setConfig((app: Server) => {
                 app.pre((req: any, res: any, next: Function) => {
                     req.start = Date.now();
-                    this.logger.info(`Creating server`)
-
                     next()
                 });
                 app.use(CORS())
