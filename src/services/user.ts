@@ -30,7 +30,6 @@ class UserService implements IUserService {
     ) {
         this.session = session;
         this.db = db;
-        console.log("Getlogger")
         this.logger = LoggerFactory.getLogger(this)
     }
 

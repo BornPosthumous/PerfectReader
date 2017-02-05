@@ -40,7 +40,6 @@ export class App implements IApp {
     }
     public async bootstrap(): Promise<Boolean> {
         try {
-            console.log("Bootstrapping user service")
             this.httpServer.onBootstrap(this.userService.onBootstrap.bind(this.userService));
             this.httpServer.onBootstrap(this.cache.onBootstrap.bind(this.cache))
             this.httpServer.onBootstrap(this.textsService.onBootstrap.bind(this.textsService))
