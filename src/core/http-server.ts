@@ -12,6 +12,10 @@ import IRes from "../interfaces/res"
 import ILogger from "../interfaces/logger"
 import ILoggerFactory from "../interfaces/logger-factory"
 import ISessionService from "../interfaces/session-service"
+import fs = require("fs")
+import path = require("path")
+var os = require('os');
+
 
 @injectable()
 export class HTTPServer implements IHTTPServer {
@@ -60,11 +64,42 @@ export class HTTPServer implements IHTTPServer {
             .setConfig((app: Server) => {
                 app.pre((req: any, res: any, next: Function) => {
                     req.start = Date.now();
+                    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:4200');
+                    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
+                    res.setHeader('Access-Control-Allow-Credentials', true);
+                    // console.log("res", res)
                     next()
                 });
                 app.use(CORS())
                 app.use(queryParser())
-                app.use(bodyParser())
+                app.use(bodyParser(
+                    {
+                        maxBodySize: 0,
+                        mapParams: true,
+                        mapFiles: true,
+                        // overrideParams: true,
+                        // multipartHandler: function(part: any) { },
+                        // multipartFileHandler: function(part: any) {
+                        //     console.log("Multipart File Handler")
+                        //     var body = '';
+                        //     var filePath = path.resolve('./', 'temp', 'test.txt')
+                        //     part.on('data', function(data: any) {
+                        //         body += data;
+                        //     });
+
+                        //     part.on('end', function() {
+                        //         fs.appendFile(filePath, body, function() {
+                        //             console.log("End end end")
+                        //         });
+                        //     });
+
+                        // },
+                        // keepExtensions: false,
+                        uploadDir: os.tmpdir(),
+                        // multiples: true,
+                        // hash: 'sha1'
+                    }
+                ))
             })
             .build()
 

@@ -24,8 +24,8 @@ export class ParagraphsService implements IParagraphsService {
         this.logger.info('create paragraphs table');
         await this.db.paragraphs.create();
     }
-    public async add(book_id: number, paragraph: string) {
-        return await this.db.paragraphs.add(book_id, paragraph)
+    public async add(book_id: number, paragraph: string, count: number) {
+        return await this.db.paragraphs.add(book_id, paragraph, count)
     }
     public async get(id: number) {
         return await this.db.paragraphs.get(id)
@@ -40,6 +40,7 @@ export class ParagraphsService implements IParagraphsService {
         return await this.db.paragraphs.remove(id)
     }
     public async update(id: number, paragraph: string) {
+        console.log("ID", id, "P", paragraph);
         return await this.db.paragraphs.update(id, paragraph)
     }
     public async getBook(book_id: number) {

@@ -1,5 +1,5 @@
 import { injectable, inject } from "inversify"
-import Raw  from '../interfaces/raw'
+import Raw from '../interfaces/raw'
 import Paragraphs from '../interfaces/paragraphs'
 import { Text } from '../interfaces/text'
 import { Source } from '../enums/source'
@@ -14,23 +14,24 @@ export class TextReader implements ITextReader {
     public init: Function
     private _RawText: ITextGetter
     public _raw: Raw
-    constructor(src: Source){
-        switch(src){
+
+    constructor(src: Source) {
+        switch (src) {
             case Source.FS:
-                this.init = this.initType( new FileText().get)
+                this.init = this.initType(new FileText().get)
                 break;
-            case Source.TEXT: 
-                this.init = this.initType( new RawText().get)
+            case Source.TEXT:
+                this.init = this.initType(new RawText().get)
                 break;
             case Source.HTTP:
-                this.init =  this.initType( new UrlText().get)
+                this.init = this.initType(new UrlText().get)
                 break;
         }
     }
-    private initType: Function = ( get: Function) => async (text: Raw) => {
+    private initType: Function = (get: Function) => async (text: Raw) => {
         const raw = await get(text)
-        const paragraphs:Paragraphs = TextProcessor.toParagraph(raw)
-        this._contents = {raw, paragraphs}        
+        const paragraphs: Paragraphs = TextProcessor.toParagraph(raw)
+        this._contents = { raw, paragraphs }
     }
     get contents(): Text {
         return this._contents
@@ -52,21 +53,21 @@ export class TextProcessor {
 
 @injectable()
 export class RawText implements ITextGetter {
-    public get(text: Raw){ return Promise.resolve(text) } 
+    public get(text: Raw) { return Promise.resolve(text) }
 }
 
 @injectable()
 export class FileText implements ITextGetter {
     public get(path: string): Promise<Raw> {
         return new Promise<Raw>((resolve, reject) => {
-            fs.readFile(path, 'utf8', (err: Error, contents: Raw) => err ? reject(err): resolve(contents)) 
+            fs.readFile(path, 'utf8', (err: Error, contents: Raw) => err ? reject(err) : resolve(contents))
         })
     }
 }
 
 @injectable()
 export class UrlText implements ITextGetter {
-    public get(url: string) : Promise<Raw> {
+    public get(url: string): Promise<Raw> {
         return new Promise<Raw>((resolve, reject) => {
             axios.get(url)
                 .then((response) => resolve(response.data), reject)

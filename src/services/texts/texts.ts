@@ -9,6 +9,7 @@ import { TextReader } from '../../factories/text-reader'
 import ILogger from "../../interfaces/logger";
 import ILoggerFactory from "../../interfaces/logger-factory";
 import * as fs from "fs";
+
 let Tesseract = require('tesseract.js')
 let Jimp = require('jimp')
 

@@ -14,8 +14,8 @@ export class Repository {
     public async create(): Promise<any> {
         return this.db.none(sql.create)
     }
-    public async add(book_id: number, paragraph: string): Promise<IResult> {
-        return await this.db.result(sql.add, [book_id, paragraph], (r: IResult) => r.rows)
+    public async add(book_id: number, paragraph: string, count: number): Promise<IResult> {
+        return await this.db.result(sql.add, [book_id, paragraph, count], (r: IResult) => r.rows)
     }
     public async findByID(id: number): Promise<any> {
         return await this.db.oneOrNone('SELECT * from texts where id = $1', id)

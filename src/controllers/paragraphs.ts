@@ -76,19 +76,24 @@ export class ParagraphsController implements IController {
         res.send(result)
         return next()
     }
+
     @Validate
     @Post('/update')
     private async update(req: IReq, res: Response, next: Next) {
         this.logger.info("Updating paragraph : ", req.body)
+        // req.body = JSON.parse(req.body);
+        console.log("Parsed", req.body.id);
+
         let result: IResult;
         try {
             const id_exists: IDBParagraph | null
-                = await this.ParagraphsService.findByID(req.body.id)
+                = await this.ParagraphsService.get(parseInt(req.body.id))
 
             if (!id_exists) { throw new Error("id not in db") }
 
             result = await this.ParagraphsService.update(req.body.id, req.body.paragraph)
             res.send(result)
+
         } catch (e) {
             this.logger.error(e)
             res.send(e)
