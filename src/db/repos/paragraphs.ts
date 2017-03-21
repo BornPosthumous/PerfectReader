@@ -24,7 +24,7 @@ export class Repository {
         return this.db.result(sql.remove, id, (r: IResult) => r.rows)
     }
     public async update(id: number, paragraph: string): Promise<IResult> {
-        return this.db.result(sql.update, [id, paragraph], (r: IResult) => r.rows)
+        return await this.db.result(sql.update, [id, paragraph], (r: IResult) => r.rows)
     }
     public async get(id: number): Promise<IResult> {
         return await this.db.one('SELECT * from paragraphs where id=$1', id)

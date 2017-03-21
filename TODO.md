@@ -3,8 +3,8 @@
 |:------|:------:|:------
 | /home/jeff/Documents/PerfectReader/src/controllers/texts.ts | 42 | OCR from web image
 | /home/jeff/Documents/PerfectReader/src/controllers/texts.ts | 43 | FIX OCR route w/ validator
-| /home/jeff/Documents/PerfectReader/src/controllers/texts.ts | 165 | Check if ID exists on getID route try catch
-| /home/jeff/Documents/PerfectReader/src/controllers/texts.ts | 218 | this route doesn't return the update object
+| /home/jeff/Documents/PerfectReader/src/controllers/texts.ts | 175 | Check if ID exists on getID route try catch
+| /home/jeff/Documents/PerfectReader/src/controllers/texts.ts | 228 | this route doesn't return the update object
 | /home/jeff/Documents/PerfectReader/src/core/http-server.ts | 127 | InternalServerError Page
 | /home/jeff/Documents/PerfectReader/src/main.ts | 10 | Refactor db routes to no longer use result type
 | /home/jeff/Documents/PerfectReader/src/main.ts | 11 | Should also add types to the routes

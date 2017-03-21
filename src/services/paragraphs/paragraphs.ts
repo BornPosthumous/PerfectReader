@@ -40,7 +40,6 @@ export class ParagraphsService implements IParagraphsService {
         return await this.db.paragraphs.remove(id)
     }
     public async update(id: number, paragraph: string) {
-        console.log("ID", id, "P", paragraph);
         return await this.db.paragraphs.update(id, paragraph)
     }
     public async getBook(book_id: number) {

@@ -81,9 +81,6 @@ export class ParagraphsController implements IController {
     @Post('/update')
     private async update(req: IReq, res: Response, next: Next) {
         this.logger.info("Updating paragraph : ", req.body)
-        // req.body = JSON.parse(req.body);
-        console.log("Parsed", req.body.id);
-
         let result: IResult;
         try {
             const id_exists: IDBParagraph | null

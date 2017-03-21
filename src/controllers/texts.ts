@@ -62,21 +62,37 @@ export class TextsController implements IController {
     }
     @Post('/multipart')
     private async fileUpload(req: IReq, res: Response, next: Next) {
-        this.logger.info("Converting")
-        fs.writeFile(path.resolve('./', 'temp', 'test.txt'), req.params.file, 'utf8', function(err) {
+        this.logger.info("Making file")
+        let filepath = path.resolve('./', 'temp', 'test.txt')
+        console.log("Filepath", filepath)
+        req.body.path = filepath;
+        req.body.title = "Test File"
+
+        await fs.writeFile(filepath, req.params.file, 'utf8', function(err) {
             if (err) {
                 return console.log(err);
             }
-            console.log("The file was saved!");
         });
-        return next();
+
+        let result: IResult;
+        try {
+            result = await this.TextService.addTextFromFS(req.body.title, req.body.path)
+            let id = result[0].id
+            console.log("ID", id)
+            req.body.id = id;
+        } catch (e) {
+            this.logger.error(e)
+            res.send(e)
+        }
+        return next('convert');
     }
 
 
-    @Post('/convert')
+    @Post({ path: '/convert', name: 'convert' })
     private async toParagraph(req: IReq, res: Response, next: Next) {
         this.logger.info("Converting")
         let result: IResult;
+
         try {
             const id: number | null
                 = req.body.id ? req.body.id : null
@@ -93,14 +109,16 @@ export class TextsController implements IController {
             const tr = new TextReader(Source.TEXT)
             await tr.init(text)
 
-            let count = 0
-            tr.paragraphs.map(x => {
-                this.ParagraphsService.add(id, x, count)
-                count += 1;
-            })
+            let paragraphs = tr.paragraphs;
+            let results = await Promise.all(
+                paragraphs.map(async (p, i): Promise<void> => {
+                    await this.ParagraphsService.add(id, p, i)
+                    return
+                }));
 
-            result = await this.ParagraphsService.getBook(id)
-            res.json(result)
+            paragraphs = await this.ParagraphsService.getBook(id)
+            res.json({ id, paragraphs })
+
         } catch (e) {
             this.logger.error(e)
             res.send(e)
@@ -108,7 +126,7 @@ export class TextsController implements IController {
     }
 
     @Validate
-    @Post('/add/raw')
+    @Post({ path: '/add/raw' })
     private async addText(req: IReq, res: Response, next: Next) {
         this.logger.info("Adding Raw Text :  ", req.body)
         let result: IResult;
@@ -122,7 +140,7 @@ export class TextsController implements IController {
     }
 
     @Validate
-    @Post('/add/fs')
+    @Post({ path: '/add/fs', name: 'addfs' })
     private async addTextFromFS(req: IReq, res: Response, next: Next) {
         this.logger.info("Adding Text from FS :  ", req.body)
         let result: IResult;
