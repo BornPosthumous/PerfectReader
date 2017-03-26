@@ -19,7 +19,7 @@ export class Repository {
         return await this.db.oneOrNone('SELECT * from texts where id = $1', id)
     }
     public async remove(id: number): Promise<IResult> {
-        return this.db.result(sql.remove, id, (r: IResult) => r)
+        return this.db.any(sql.remove, id)
     }
     public async getAll(): Promise<any> {
         return this.db.any('SELECT * from texts where deleted = false')

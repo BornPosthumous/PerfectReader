@@ -9,7 +9,7 @@ import { TextReader } from '../../factories/text-reader'
 import ILogger from "../../interfaces/logger";
 import ILoggerFactory from "../../interfaces/logger-factory";
 import * as fs from "fs";
-
+import * as rp from 'request-promise'
 let Tesseract = require('tesseract.js')
 let Jimp = require('jimp')
 
@@ -41,6 +41,25 @@ export class TextsService implements ITextsService {
         await textReader.init(path)
         return await this.db.texts
             .add(title, textReader.contents.raw)
+    }
+    public async ocrTextFromUrl(filename: string, url: string) {
+        let options = {
+            method: 'POST',
+            uri: 'http://127.0.0.1:5000/fromURL',
+            body: JSON.stringify(({ filename, url })),
+            headers: {
+                'content-type': 'application/json'
+            }
+        }
+        rp(options)
+            .then(function(htmlString) {
+                console.log("RESP", htmlString)
+                // Process html...
+            })
+            .catch(function(err) {
+                console.log("Error!", err)
+            });
+
     }
 
     public async ocrTextFromFS(title: string, path: string) {

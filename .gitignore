@@ -1,3 +1,7 @@
 node_modules
 .got
 dist
+flaskmicro
+ocr.egg-info
+ocr/dump.rdb
+ocr/__pycache__

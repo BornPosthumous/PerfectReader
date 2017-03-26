@@ -14,7 +14,8 @@ import IResult from '../interfaces/result'
 import Validate from '../validate'
 import fs = require("fs");
 import * as path from 'path'
-
+var request = require('request')
+import * as rp from 'request-promise'
 
 @Controller(`${API_BASE}/texts`)
 @injectable()
@@ -34,7 +35,9 @@ export class TextsController implements IController {
         this.logger.info("Getting All Texts")
         let result: any =
             await this.TextService.getAll()
-        result = result.map((x: any) => x.id)
+        result = result.map((x: any) => {
+            return { id: x.id, title: x.title }
+        })
         res.send(result)
         return next()
     }
@@ -60,13 +63,35 @@ export class TextsController implements IController {
             res.send(e)
         }
     }
+
+    @Post('/ocrurl')
+    private async ocrFromUrl(req: IReq, res: Response, next: Next) {
+        let result: any;
+        req.connection.setTimeout(10000000) //FIXME this is hacky way to keep request alive
+        console.log("OCRURL", req.body)
+        try {
+            const url: string | null
+                = req.body.url ? req.body.url : null
+            if (!path) { throw new Error("No url on Query") }
+            const filename: string | null
+                = req.body.filename ? req.body.filename : null
+            if (!filename) { throw new Error("No filename on Query") }
+
+            result = await this.TextService.ocrTextFromUrl(filename, url)
+
+            res.send(200, result)
+        } catch (e) {
+            this.logger.error(e)
+            res.send(e)
+        }
+    }
     @Post('/multipart')
     private async fileUpload(req: IReq, res: Response, next: Next) {
-        this.logger.info("Making file")
+        this.logger.info("Making file", req)
         let filepath = path.resolve('./', 'temp', 'test.txt')
-        console.log("Filepath", filepath)
         req.body.path = filepath;
-        req.body.title = "Test File"
+
+        let title = req.params.title
 
         await fs.writeFile(filepath, req.params.file, 'utf8', function(err) {
             if (err) {
@@ -76,9 +101,8 @@ export class TextsController implements IController {
 
         let result: IResult;
         try {
-            result = await this.TextService.addTextFromFS(req.body.title, req.body.path)
+            result = await this.TextService.addTextFromFS(title, req.body.path)
             let id = result[0].id
-            console.log("ID", id)
             req.body.id = id;
         } catch (e) {
             this.logger.error(e)
@@ -185,8 +209,9 @@ export class TextsController implements IController {
         return next()
     }
 
-    @Validate
-    @Delete('/deleteID')
+    //TODO use delete method
+    // @Validate
+    @Post('/deleteID')
     private async removeByID(req: IReq, res: Response, next: Next) {
         this.logger.info("Deleting ID :  ", req.body)
         let result: IResult;
