@@ -30,9 +30,10 @@ export class ParagraphsController implements IController {
         res.send(result)
         return next()
     }
-    @Validate
+    // @Validate
     @Post('/book')
     private async getBook(req: IReq, res: Response, next: Next) {
+        console.log(req)
         this.logger.info("Getting all Paragraphs in book", req.body)
         let result: IResult;
         try {

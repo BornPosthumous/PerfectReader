@@ -2,7 +2,7 @@ import { injectable, inject } from "inversify"
 import IBootstrap from '../interfaces/bootstrap'
 import IServerConfig from '../interfaces/server-config'
 import IHTTPServer from '../interfaces/http-server'
-import { Server, queryParser, bodyParser, CORS } from "restify"
+import { Server, queryParser, bodyParser, CORS, serveStatic } from "restify"
 import { InversifyRestifyServer } from "inversify-restify-utils"
 import { kernel } from "../config/kernel"
 import { __ } from "../config/constants"
@@ -72,6 +72,10 @@ export class HTTPServer implements IHTTPServer {
                 });
                 app.use(CORS())
                 app.use(queryParser())
+                console.log("dirname", __dirname)
+                app.get(/\/docs\/public\/?.*/, serveStatic({
+                    directory: path.resolve('')
+                }));
                 app.use(bodyParser(
                     {
                         maxBodySize: 0,
@@ -120,6 +124,7 @@ export class HTTPServer implements IHTTPServer {
             this.logger.fatal(`route=${route}`, err);
             process.exit(1)
         });
+
 
         this.server.on('InternalServer', (req: IReq, res: IRes, err: any, cb: Function) => {
             this.logger.error(err);

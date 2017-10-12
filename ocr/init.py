@@ -24,7 +24,7 @@ def setup():
     print("Available languages: %s" % ", ".join(langs))
 
     #TODO filter for eng
-    lang = langs[1]
+    lang = langs[2]
     print("Will use lang '%s'" % (lang))
 
     print ("\n End Setup\n===================================")

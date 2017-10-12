@@ -19,98 +19,112 @@ let Jimp = require('jimp')
 
 @injectable()
 export class TextsService implements ITextsService {
-    db: any;
-    private logger: ILogger;
+  db: any;
+  private logger: ILogger;
 
-    public constructor(
-        @inject(__.LoggerFactory) LoggerFactory: ILoggerFactory,
-        @inject(__.Database) db: IDatabase<IExtensions> & IExtensions
-    ) {
-        this.db = db;
-        this.logger = LoggerFactory.getLogger(this)
+  public constructor(
+    @inject(__.LoggerFactory) LoggerFactory: ILoggerFactory,
+    @inject(__.Database) db: IDatabase<IExtensions> & IExtensions
+  ) {
+    this.db = db;
+    this.logger = LoggerFactory.getLogger(this)
+  }
+  public async onBootstrap() {
+    this.logger.info('create texts table');
+    await this.db.texts.create();
+  }
+  public async add(title: string, text: string) {
+    return await this.db.texts.add(title, text)
+  }
+  public async addTextFromFS(title: string, path: string) {
+    const textReader = new TextReader(Source.FS)
+    await textReader.init(path)
+    return await this.db.texts
+      .add(title, textReader.contents.raw)
+  }
+  public async ocrTextFromUrl(filename: string, url: string) {
+    let options = {
+      method: 'POST',
+      uri: 'http://127.0.0.1:5000/fromURL',
+      body: JSON.stringify(({ filename, url })),
+      headers: {
+        'content-type': 'application/json'
+      }
     }
-    public async onBootstrap() {
-        this.logger.info('create texts table');
-        await this.db.texts.create();
+    return rp(options)
+  }
+  public async xmlFromImage() {
+    let options = {
+      method: 'POST',
+      uri: 'http://127.0.0.1:5000/doshit',
+      body: JSON.stringify({ hello: 'hi' }),
+      headers: {
+        'content-type': 'application/json'
+      }
     }
-    public async add(title: string, text: string) {
-        return await this.db.texts.add(title, text)
+    return rp(options)
+  }
+  public async magick(url: string, filename: string, magickOptions: any) {
+    console.log("Magick Options before Pypy", magickOptions)
+    let options = {
+      method: 'POST',
+      uri: 'http://127.0.0.1:5000/magick',
+      body: JSON.stringify(({ filename, url, magickOptions })),
+      headers: {
+        'content-type': 'image/jpg'
+      }
     }
-    public async addTextFromFS(title: string, path: string) {
-        const textReader = new TextReader(Source.FS)
-        await textReader.init(path)
-        return await this.db.texts
-            .add(title, textReader.contents.raw)
+    return rp(options)
+  }
+  public async ocrTextFromFS(title: string, path: string) {
+    const filename = "./temp/temp.jpg"
+    //TODO Remove converted image !
+    const processImg = async function () {
+      return new Promise((resolve: any, reject: any) => {
+        Jimp.read(path, function (err: any, img: any) {
+          if (err) { reject(err) }
+          img.greyscale().scale(0.75).write(filename)
+          console.log("done")
+          resolve("Done")
+        })
+      })
     }
-    public async ocrTextFromUrl(filename: string, url: string) {
-        let options = {
-            method: 'POST',
-            uri: 'http://127.0.0.1:5000/fromURL',
-            body: JSON.stringify(({ filename, url })),
-            headers: {
-                'content-type': 'application/json'
-            }
-        }
-        rp(options)
-            .then(function(htmlString) {
-                console.log("RESP", htmlString)
-                // Process html...
-            })
-            .catch(function(err) {
-                console.log("Error!", err)
-            });
+    await processImg()
+    // Doing this as just a timeout
+    // Doing this makes the marker set error go away, why...
+    // It looks like the file isnt done being written 
+    // (I did a test where i read file before and after/logged it to stdout )
+    //        await Jimp.read("./rfid.jpg")
+    const text = await Tesseract.recognize(filename)
+      .progress((message: any) => console.log(message))
+      .catch((err: any) => console.error(err))
+      .then((result: any) => result)
 
-    }
+    console.log("Text", text.text)
 
-    public async ocrTextFromFS(title: string, path: string) {
-        const filename = "./temp.jpg"
-        //TODO Remove converted image !
-        const processImg = async function() {
-            return new Promise((resolve: any, reject: any) => {
-                Jimp.read(path, function(err: any, img: any) {
-                    if (err) { reject(err) }
-                    img.greyscale().scale(0.75).write(filename)
-                    console.log("done")
-                    resolve("Done")
-                })
-            })
-        }
-        await processImg()
-        // Doing this as just a timeout
-        // Doing this makes the marker set error go away, why...
-        // It looks like the file isnt done being written 
-        // (I did a test where i read file before and after/logged it to stdout )
-        await Jimp.read("./rfid.jpg")
-        const text = await Tesseract.recognize(filename)
-            .progress((message: any) => console.log(message))
-            .catch((err: any) => console.error(err))
-            .then((result: any) => result)
+    return await this.db.texts.add(title, text.text)
+  }
 
-        console.log("Text", text.text)
-
-        return await this.db.texts.add(title, text.text)
-    }
-
-    public async addTextFromURL(title: string, url: string) {
-        const textReader = new TextReader(Source.HTTP)
-        await textReader.init(url)
-        return await this.db.texts
-            .add(title, textReader.contents.raw)
-    }
-    public async updateText(id: number, text: string) {
-        return await this.db.texts.updateText(id, text)
-    }
-    public async updateTitle(id: number, title: string) {
-        return await this.db.texts.updateTitle(id, title)
-    }
-    public async findByID(id: number) {
-        return await this.db.texts.findByID(id)
-    }
-    public async removeByID(id: number) {
-        return await this.db.texts.remove(id)
-    }
-    public async getAll() {
-        return await this.db.texts.getAll()
-    }
+  public async addTextFromURL(title: string, url: string) {
+    const textReader = new TextReader(Source.HTTP)
+    await textReader.init(url)
+    return await this.db.texts
+      .add(title, textReader.contents.raw)
+  }
+  public async updateText(id: number, text: string) {
+    return await this.db.texts.updateText(id, text)
+  }
+  public async updateTitle(id: number, title: string) {
+    return await this.db.texts.updateTitle(id, title)
+  }
+  public async findByID(id: number) {
+    return await this.db.texts.findByID(id)
+  }
+  public async removeByID(id: number) {
+    return await this.db.texts.remove(id)
+  }
+  public async getAll() {
+    return await this.db.texts.getAll()
+  }
 }
 
